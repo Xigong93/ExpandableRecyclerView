@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,8 +24,9 @@ import java.util.List;
  */
 public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private static final int GROUP_VIEW_TYPE = 1;
-    private static final int CHILDREN_VIEW_TYPE = 2;
+    static final int GROUP_VIEW_TYPE = 1;
+    static final int CHILDREN_VIEW_TYPE = 2;
+    static final int GROUP_IS_EXPAND_FLAG = 3 << 24;
     private static final Object GROUP_EXPAND_CHANGE = new Object();
 
     public static class Group<Parent, Children> {
@@ -281,7 +283,9 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
         final RecyclerViewItem recyclerViewItem = recyclerViewItemList.get(holder.getAdapterPosition());
         if (getItemViewType(holder.getAdapterPosition()) == GROUP_VIEW_TYPE) {
             if (payloads.isEmpty()) {
-                onBindParentViewHolder(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, isExpand(recyclerViewItem.groupPosition));
+                final boolean expand = isExpand(recyclerViewItem.groupPosition);
+                holder.itemView.setTag(GROUP_IS_EXPAND_FLAG, expand);
+                onBindParentViewHolder(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, expand);
                 holder.itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -295,7 +299,9 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
             } else {
                 for (Object payload : payloads) {
                     if (GROUP_EXPAND_CHANGE == payload) {
-                        onBindParentViewHolderExpandChange(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, isExpand(recyclerViewItem.groupPosition));
+                        final boolean expand = isExpand(recyclerViewItem.groupPosition);
+                        holder.itemView.setTag(GROUP_IS_EXPAND_FLAG, expand);
+                        onBindParentViewHolderExpandChange(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, expand);
                     } else {
                         onBindParentViewHolder(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, payload);
                     }

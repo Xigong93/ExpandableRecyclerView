@@ -34,6 +34,13 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
     ArrayList<RecyclerView.ViewHolder> mRemoveAnimations = new ArrayList<>();
     ArrayList<RecyclerView.ViewHolder> mChangeAnimations = new ArrayList<>();
 
+    public ExpandableItemAnimator() {
+        setAddDuration(250);
+        setRemoveDuration(250);
+        setMoveDuration(250);
+        setChangeDuration(250);
+    }
+
     private static class MoveInfo {
         public RecyclerView.ViewHolder holder;
         public int fromX, fromY, toX, toY;
@@ -109,12 +116,12 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
                     mMovesList.remove(moves);
                 }
             };
-            if (removalsPending) {
-                View view = moves.get(0).holder.itemView;
-                ViewCompat.postOnAnimationDelayed(view, mover, getRemoveDuration());
-            } else {
+//            if (removalsPending) {
+//                View view = moves.get(0).holder.itemView;
+//                ViewCompat.postOnAnimationDelayed(view, mover, getRemoveDuration());
+//            } else {
                 mover.run();
-            }
+//            }
         }
         // Next, change stuff, to run in parallel with move animations
         if (changesPending) {
@@ -179,7 +186,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
         final View view = holder.itemView;
         final ViewPropertyAnimator animation = view.animate();
         mRemoveAnimations.add(holder);
-        animation.setDuration(getRemoveDuration()).alpha(0).setListener(
+        animation.setDuration(getRemoveDuration()).alpha(1).setListener(
                 new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationStart(Animator animator) {
@@ -200,7 +207,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
     @Override
     public boolean animateAdd(final RecyclerView.ViewHolder holder) {
         resetAnimation(holder);
-        holder.itemView.setAlpha(0);
+//        holder.itemView.setAlpha(0);
         mPendingAdditions.add(holder);
         return true;
     }

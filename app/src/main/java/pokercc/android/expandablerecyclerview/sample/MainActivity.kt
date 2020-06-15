@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.ExpandableItemAnimator
+import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.CityItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.ProvinceItemBinding
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
             layoutManager = LinearLayoutManager(context)
             adapter = CountryAdapter(China.map { ExpandableAdapter.Group(it, it.cities) })
             itemAnimator = ExpandableItemAnimator()
+            addItemDecoration(ExpandableItemDecoration())
         }
 
     }
