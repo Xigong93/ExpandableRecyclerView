@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExpandableItemAnimator  extends SimpleItemAnimator {
+class ExpandableItemAnimator extends SimpleItemAnimator {
     private static final boolean DEBUG = false;
 
     private static TimeInterpolator sDefaultInterpolator;
@@ -33,12 +33,15 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
     ArrayList<RecyclerView.ViewHolder> mMoveAnimations = new ArrayList<>();
     ArrayList<RecyclerView.ViewHolder> mRemoveAnimations = new ArrayList<>();
     ArrayList<RecyclerView.ViewHolder> mChangeAnimations = new ArrayList<>();
+    private final ExpandableAdapter<?, ?> expandableAdapter;
 
-    public ExpandableItemAnimator() {
-        setAddDuration(250);
-        setRemoveDuration(250);
-        setMoveDuration(250);
-        setChangeDuration(250);
+    public ExpandableItemAnimator(ExpandableAdapter<?, ?> expandableAdapter) {
+        this.expandableAdapter = expandableAdapter;
+        int animDuration = 2500;
+        setAddDuration(animDuration);
+        setRemoveDuration(animDuration);
+        setMoveDuration(animDuration);
+        setChangeDuration(animDuration);
     }
 
     private static class MoveInfo {
@@ -57,6 +60,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
     private static class ChangeInfo {
         public RecyclerView.ViewHolder oldHolder, newHolder;
         public int fromX, fromY, toX, toY;
+
         private ChangeInfo(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder) {
             this.oldHolder = oldHolder;
             this.newHolder = newHolder;
@@ -120,7 +124,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
 //                View view = moves.get(0).holder.itemView;
 //                ViewCompat.postOnAnimationDelayed(view, mover, getRemoveDuration());
 //            } else {
-                mover.run();
+            mover.run();
 //            }
         }
         // Next, change stuff, to run in parallel with move animations
@@ -177,9 +181,44 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
 
     @Override
     public boolean animateRemove(final RecyclerView.ViewHolder holder) {
+        int groupIndex = expandableAdapter.getGroupIndex(holder);
         resetAnimation(holder);
-        mPendingRemovals.add(holder);
-        return true;
+        if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
+            // 最后一组的执行一个展开动画，其他的不执行动画
+            final View view = holder.itemView;
+            view.setTranslationY(0);
+            final ViewPropertyAnimator viewPropertyAnimator = view.animate();
+            viewPropertyAnimator
+                    .translationY(-1000)
+                    .setDuration(getRemoveDuration())
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                            dispatchRemoveStarting(holder);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                            view.setTranslationY(0);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            viewPropertyAnimator.setListener(null);
+                            dispatchRemoveFinished(holder);
+                            mRemoveAnimations.remove(holder);
+                            dispatchFinishedWhenDone();
+                        }
+                    })
+                    .start();
+
+            return false;
+        } else {
+            resetAnimation(holder);
+            holder.itemView.setAlpha(1);
+            mPendingRemovals.add(holder);
+            return true;
+        }
     }
 
     private void animateRemoveImpl(final RecyclerView.ViewHolder holder) {
@@ -206,10 +245,43 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
 
     @Override
     public boolean animateAdd(final RecyclerView.ViewHolder holder) {
+        int groupIndex = expandableAdapter.getGroupIndex(holder);
         resetAnimation(holder);
+        if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
+            // 最后一组的执行一个展开动画，其他的不执行动画
+            final View view = holder.itemView;
+            view.setTranslationY(-1000);
+            final ViewPropertyAnimator viewPropertyAnimator = view.animate();
+            viewPropertyAnimator
+                    .translationY(0)
+                    .setDuration(getAddDuration())
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                            dispatchAddStarting(holder);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                            view.setTranslationY(0);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            viewPropertyAnimator.setListener(null);
+                            dispatchAddFinished(holder);
+                            mAddAnimations.remove(holder);
+                            dispatchFinishedWhenDone();
+                        }
+                    })
+                    .start();
+
+            return false;
+        } else {
 //        holder.itemView.setAlpha(0);
-        mPendingAdditions.add(holder);
-        return true;
+            mPendingAdditions.add(holder);
+            return true;
+        }
     }
 
     void animateAddImpl(final RecyclerView.ViewHolder holder) {
@@ -241,6 +313,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
     @Override
     public boolean animateMove(final RecyclerView.ViewHolder holder, int fromX, int fromY,
                                int toX, int toY) {
+
         final View view = holder.itemView;
         fromX += (int) holder.itemView.getTranslationX();
         fromY += (int) holder.itemView.getTranslationY();
@@ -259,6 +332,8 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
         }
         mPendingMoves.add(new MoveInfo(holder, fromX, fromY, toX, toY));
         return true;
+
+
     }
 
     void animateMoveImpl(final RecyclerView.ViewHolder holder, int fromX, int fromY, int toX, int toY) {
@@ -369,6 +444,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
                 public void onAnimationStart(Animator animator) {
                     dispatchChangeStarting(changeInfo.newHolder, false);
                 }
+
                 @Override
                 public void onAnimationEnd(Animator animator) {
                     newViewAnimation.setListener(null);
@@ -402,6 +478,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
             endChangeAnimationIfNecessary(changeInfo, changeInfo.newHolder);
         }
     }
+
     private boolean endChangeAnimationIfNecessary(ChangeInfo changeInfo, RecyclerView.ViewHolder item) {
         boolean oldItem = false;
         if (changeInfo.newHolder == item) {
@@ -502,6 +579,7 @@ public class ExpandableItemAnimator  extends SimpleItemAnimator {
             throw new IllegalStateException("after animation is cancelled, item should not be in "
                     + "mMoveAnimations list");
         }
+        view.setTranslationY(0);
         dispatchFinishedWhenDone();
     }
 

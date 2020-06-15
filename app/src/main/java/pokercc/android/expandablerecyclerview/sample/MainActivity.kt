@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
-import pokercc.android.expandablerecyclerview.ExpandableItemAnimator
 import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.CityItemBinding
@@ -18,13 +17,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.recyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = CountryAdapter(China.map { ExpandableAdapter.Group(it, it.cities) })
-            itemAnimator = ExpandableItemAnimator()
-            addItemDecoration(ExpandableItemDecoration())
-        }
-
+        val data = China.map { ExpandableAdapter.Group(it, it.cities) }
+        val countryAdapter = CountryAdapter(data)
+        binding.recyclerView.adapter = countryAdapter
+        binding.recyclerView.addItemDecoration(ExpandableItemDecoration())
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
     }
 }
 
@@ -87,19 +84,23 @@ private class CountryAdapter(private val data: List<Group<Province, City>>) :
 
     }
 
+
     override fun onBindParentViewHolderExpandChange(
         holder: RecyclerView.ViewHolder,
-        parent: Province,
+        parent: Province?,
         groupPosition: Int,
+        animDuration: Long,
         expand: Boolean
     ) {
         val arrowImage = (holder as ProvinceViewHolder).itemBinding.arrowImage
         if (expand) {
             arrowImage.animate()
+                .setDuration(animDuration)
                 .rotation(0f)
                 .start()
         } else {
             arrowImage.animate()
+                .setDuration(animDuration)
                 .rotation(-90.0f)
                 .start()
         }

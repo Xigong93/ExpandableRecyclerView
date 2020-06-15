@@ -1,14 +1,12 @@
 package pokercc.android.expandablerecyclerview;
 
 import android.os.Looper;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
-
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,6 +25,8 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
     static final int GROUP_VIEW_TYPE = 1;
     static final int CHILDREN_VIEW_TYPE = 2;
     static final int GROUP_IS_EXPAND_FLAG = 3 << 24;
+    static final int GROUP_INDEX_FLAG = 3 << 24 + 1;
+    static final int CHILDREN_INDEX_FLAG = 3 << 24 + 2;
     private static final Object GROUP_EXPAND_CHANGE = new Object();
 
     public static class Group<Parent, Children> {
@@ -98,6 +98,13 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
         this.onChildrenItemClickListener = onChildrenItemClickListener;
     }
 
+    private final ExpandableItemAnimator expandableItemAnimator = new ExpandableItemAnimator(this);
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+        recyclerView.setItemAnimator(expandableItemAnimator);
+    }
 
     /**
      * 某个group是否展开
@@ -281,6 +288,8 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
     @Override
     public final void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int position, @NonNull List<Object> payloads) {
         final RecyclerViewItem recyclerViewItem = recyclerViewItemList.get(holder.getAdapterPosition());
+        holder.itemView.setTag(GROUP_INDEX_FLAG, recyclerViewItem.groupPosition);
+        holder.itemView.setTag(CHILDREN_INDEX_FLAG, recyclerViewItem.childPosition);
         if (getItemViewType(holder.getAdapterPosition()) == GROUP_VIEW_TYPE) {
             if (payloads.isEmpty()) {
                 final boolean expand = isExpand(recyclerViewItem.groupPosition);
@@ -301,7 +310,8 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
                     if (GROUP_EXPAND_CHANGE == payload) {
                         final boolean expand = isExpand(recyclerViewItem.groupPosition);
                         holder.itemView.setTag(GROUP_IS_EXPAND_FLAG, expand);
-                        onBindParentViewHolderExpandChange(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, expand);
+                        long animDuration = expand ? expandableItemAnimator.getAddDuration() : expandableItemAnimator.getRemoveDuration();
+                        onBindParentViewHolderExpandChange(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, animDuration, expand);
                     } else {
                         onBindParentViewHolder(holder, recyclerViewItem.parent, recyclerViewItem.groupPosition, payload);
                     }
@@ -324,6 +334,7 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
                 }
             }
         }
+
     }
 
     protected abstract void onBindChildrenViewHolder(@NonNull RecyclerView.ViewHolder holder, Children children, int group, int childrenPosition);
@@ -338,7 +349,7 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
         onBindParentViewHolder(holder, parent, groupPosition, isExpand(groupPosition));
     }
 
-    protected abstract void onBindParentViewHolderExpandChange(@NonNull RecyclerView.ViewHolder holder, Parent parent, int groupPosition, boolean expand);
+    protected abstract void onBindParentViewHolderExpandChange(@NonNull RecyclerView.ViewHolder holder, Parent parent, int groupPosition, long animDuration, boolean expand);
 
 
     public interface OnChildrenItemClickListener<T> {
@@ -352,4 +363,41 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
     }
 
 
+    public final int getGroupCount() {
+        return groups.size();
+    }
+
+    public final int getChildrenCount(int groupIndex) {
+        return groups.get(groupIndex).children.size();
+    }
+
+    /**
+     * 获取组index
+     *
+     * @param viewHolder
+     * @return
+     */
+    public final int getGroupIndex(RecyclerView.ViewHolder viewHolder) {
+        Object index = viewHolder.itemView.getTag(GROUP_INDEX_FLAG);
+        if (index instanceof Integer) {
+            return (int) index;
+        } else {
+            return RecyclerView.NO_POSITION;
+        }
+    }
+
+    /**
+     * 获取children index
+     *
+     * @param viewHolder
+     * @return
+     */
+    public final int getChildrenIndex(RecyclerView.ViewHolder viewHolder) {
+        Object index = viewHolder.itemView.getTag(CHILDREN_INDEX_FLAG);
+        if (index instanceof Integer) {
+            return (int) index;
+        } else {
+            return RecyclerView.NO_POSITION;
+        }
+    }
 }
