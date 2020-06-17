@@ -37,7 +37,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
 
     public ExpandableItemAnimator(ExpandableAdapter<?, ?> expandableAdapter) {
         this.expandableAdapter = expandableAdapter;
-        int animDuration = 2500;
+        int animDuration = 250;
         setAddDuration(animDuration);
         setRemoveDuration(animDuration);
         setMoveDuration(animDuration);
