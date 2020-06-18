@@ -7,7 +7,7 @@
         android:background="#f4f4f4"
         android:layout_height="wrap_content">
 
-    <TextView
+    <pokercc.android.expandablerecyclerview.sample.HeavyTextView
             android:id="@+id/title_text"
             android:paddingTop="10dp"
             android:paddingBottom="10dp"
