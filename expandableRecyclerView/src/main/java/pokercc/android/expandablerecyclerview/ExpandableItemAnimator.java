@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class ExpandableItemAnimator extends SimpleItemAnimator {
+    private static final String LOG_TAG = "ExpandableItemAnimator";
     private static final boolean DEBUG = false;
 
     private static TimeInterpolator sDefaultInterpolator;
@@ -181,6 +183,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
 
     @Override
     public boolean animateRemove(final RecyclerView.ViewHolder holder) {
+        Log.d(LOG_TAG, "animateRemove(" + holder + ")");
         int groupIndex = expandableAdapter.getGroupIndex(holder);
         resetAnimation(holder);
         if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
@@ -208,6 +211,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
                             dispatchRemoveFinished(holder);
                             mRemoveAnimations.remove(holder);
                             dispatchFinishedWhenDone();
+                            resetAnimation(holder);
                         }
                     })
                     .start();
@@ -245,6 +249,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
 
     @Override
     public boolean animateAdd(final RecyclerView.ViewHolder holder) {
+        Log.d(LOG_TAG, "animateAdd(" + holder + ")");
         int groupIndex = expandableAdapter.getGroupIndex(holder);
         resetAnimation(holder);
         if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
@@ -313,7 +318,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
     @Override
     public boolean animateMove(final RecyclerView.ViewHolder holder, int fromX, int fromY,
                                int toX, int toY) {
-
+        Log.d(LOG_TAG, "animateMove(" + holder + ")");
         final View view = holder.itemView;
         fromX += (int) holder.itemView.getTranslationX();
         fromY += (int) holder.itemView.getTranslationY();
@@ -380,6 +385,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
     @Override
     public boolean animateChange(RecyclerView.ViewHolder oldHolder, RecyclerView.ViewHolder newHolder,
                                  int fromX, int fromY, int toX, int toY) {
+        Log.d(LOG_TAG, "animateChange(" + oldHolder + "," + newHolder + ")");
         if (oldHolder == newHolder) {
             // Don't know how to run change animations when the same view holder is re-used.
             // run a move animation to handle position changes.

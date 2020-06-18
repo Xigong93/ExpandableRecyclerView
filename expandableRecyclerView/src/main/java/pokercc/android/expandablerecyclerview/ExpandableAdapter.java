@@ -119,7 +119,7 @@ public abstract class ExpandableAdapter<Parent, Children> extends RecyclerView.A
 
     private void setDataInternal() {
         if (Looper.myLooper() != Looper.getMainLooper()) {
-            throw new IllegalStateException("main on main thread");
+            throw new IllegalStateException("must execute on main thread");
         }
         recyclerViewItemList.clear();
         for (int i = 0; i < groups.size(); i++) {
