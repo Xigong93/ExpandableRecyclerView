@@ -78,8 +78,9 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
     override fun onBindChildrenViewHolder(
         holder: RecyclerView.ViewHolder,
         children: College,
-        group: Int,
-        childrenPosition: Int
+        groupPosition: Int,
+        childrenPosition: Int,
+        payloads: List<Any>
     ) {
         (holder as CollegeHolder).apply {
             itemBinding.titleText.text = children.name
@@ -91,17 +92,19 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
         holder: RecyclerView.ViewHolder,
         parent: CollegeZone,
         groupPosition: Int,
-        expand: Boolean
+        expand: Boolean,
+        payloads: List<Any>
     ) {
-        (holder as CollegeZoneViewHolder).apply {
-            itemBinding.titleText.text = parent.name
-            itemBinding.arrowImage.rotation = -90.0f
+        if (payloads.isEmpty()) {
+            (holder as CollegeZoneViewHolder).apply {
+                itemBinding.titleText.text = parent.name
+                itemBinding.arrowImage.rotation = -90.0f
+            }
         }
-
     }
 
 
-    override fun onBindParentViewHolderExpandChange(
+    override fun onParentViewHolderExpandChange(
         holder: RecyclerView.ViewHolder,
         parent: CollegeZone,
         groupPosition: Int,
