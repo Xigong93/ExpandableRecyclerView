@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import pokercc.android.expandablerecyclerview.ExpandStickyHeaderDecoration
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
 import pokercc.android.expandablerecyclerview.sample.databinding.*
@@ -37,6 +38,7 @@ class CollegeActivity : AppCompatActivity() {
             binding.recyclerView.adapter = countryAdapter
         })
         binding.recyclerView.addItemDecoration(ExpandableItemDecoration())
+        binding.recyclerView.addItemDecoration(ExpandStickyHeaderDecoration())
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         viewModel.loadColleges()
     }
@@ -160,11 +162,11 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
             val parent = data[groupPosition]
             (holder as? ProvinceVH)?.apply {
                 itemBinding.titleText.text = parent.name
-                itemBinding.arrowImage.rotation = -90.0f
+                itemBinding.arrowImage.rotation = if (expand) 0f else -90.0f
             }
             (holder as? CityVH)?.apply {
                 itemBinding.titleText.text = parent.name
-                itemBinding.arrowImage.rotation = -90.0f
+                itemBinding.arrowImage.rotation = if (expand) 0f else -90.0f
             }
         }
     }

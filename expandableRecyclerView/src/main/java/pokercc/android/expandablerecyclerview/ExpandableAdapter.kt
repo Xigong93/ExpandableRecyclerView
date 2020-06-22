@@ -87,7 +87,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         notifyGroupChange(groupPosition, GROUP_EXPAND_CHANGE)
     }
 
-    open fun onGroupExpandChange(
+    protected open fun onGroupExpandChange(
         groupPosition: Int,
         adapterPosition: Int,
         expand: Boolean
