@@ -8,7 +8,8 @@ data class College(
     val order: Int,
     val name: String,
     val short: String?,
-    val zone: String
+    val zone: String,
+    val famous: Boolean = false
 )
 
 @JsonClass(generateAdapter = true)

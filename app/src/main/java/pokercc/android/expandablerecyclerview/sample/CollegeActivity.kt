@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -14,10 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
-import pokercc.android.expandablerecyclerview.sample.databinding.CityItemBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.CollegeActivityBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.CollegeItemBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.ProvinceItemBinding
+import pokercc.android.expandablerecyclerview.sample.databinding.*
 import java.lang.IllegalArgumentException
 
 class CollegeActivity : AppCompatActivity() {
@@ -47,13 +43,16 @@ class CollegeActivity : AppCompatActivity() {
 }
 
 
-private class ProvinceViewHolder(val itemBinding: ProvinceItemBinding) :
+private class ProvinceVH(val itemBinding: ProvinceItemBinding) :
     RecyclerView.ViewHolder(itemBinding.root)
 
-private class CityViewHolder(val itemBinding: CityItemBinding) :
+private class CityVH(val itemBinding: CityItemBinding) :
     RecyclerView.ViewHolder(itemBinding.root)
 
-private class CollegeHolder(val itemBinding: CollegeItemBinding) :
+private class CollegeVH(val itemBinding: CollegeItemBinding) :
+    RecyclerView.ViewHolder(itemBinding.root)
+
+private class FamousCollegeVH(val itemBinding: FamousCollegeItemBinding) :
     RecyclerView.ViewHolder(itemBinding.root)
 
 private class CollegeAdapter(private val data: List<CollegeZone>) :
@@ -62,6 +61,7 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
         private const val PROVINCE_ITEM = 11
         private const val CITY_ITEM = 12
         private const val COLLEGE_ITEM = -1
+        private const val FAMOUS_COLLEGE__ITEM = -2
     }
 
     override fun onCreateGroupViewHolder(
@@ -69,7 +69,7 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
     ): RecyclerView.ViewHolder {
         return when (viewType) {
             PROVINCE_ITEM -> {
-                ProvinceViewHolder(
+                ProvinceVH(
                     ProvinceItemBinding.inflate(
                         LayoutInflater.from(viewGroup.context),
                         viewGroup,
@@ -78,7 +78,7 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
                 )
             }
             CITY_ITEM -> {
-                CityViewHolder(
+                CityVH(
                     CityItemBinding.inflate(
                         LayoutInflater.from(viewGroup.context),
                         viewGroup,
@@ -96,7 +96,16 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup, viewType: Int
     ): RecyclerView.ViewHolder {
-        return CollegeHolder(
+        if (viewType == FAMOUS_COLLEGE__ITEM) {
+            return FamousCollegeVH(
+                FamousCollegeItemBinding.inflate(
+                    LayoutInflater.from(viewGroup.context),
+                    viewGroup,
+                    false
+                )
+            )
+        }
+        return CollegeVH(
             CollegeItemBinding.inflate(
                 LayoutInflater.from(viewGroup.context),
                 viewGroup,
@@ -114,8 +123,16 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
         }
     }
 
+    override fun getChildItemViewType(groupPosition: Int, childPosition: Int): Int {
+        return if (data[groupPosition].colleges[childPosition].famous) {
+            FAMOUS_COLLEGE__ITEM
+        } else {
+            COLLEGE_ITEM
+        }
+    }
+
     override fun isGroup(viewType: Int): Boolean {
-        return viewType == CITY_ITEM || viewType == PROVINCE_ITEM
+        return viewType > 0
     }
 
     override fun onBindChildViewHolder(
@@ -125,10 +142,12 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
         payloads: List<Any>
     ) {
         val children = data[groupPosition].colleges[childPosition]
-        (holder as CollegeHolder).apply {
+        (holder as? CollegeVH)?.apply {
             itemBinding.titleText.text = children.name
         }
-
+        (holder as? FamousCollegeVH)?.apply {
+            itemBinding.titleText.text = children.name
+        }
     }
 
     override fun onBindGroupViewHolder(
@@ -139,11 +158,11 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
     ) {
         if (payloads.isEmpty()) {
             val parent = data[groupPosition]
-            (holder as? ProvinceViewHolder)?.apply {
+            (holder as? ProvinceVH)?.apply {
                 itemBinding.titleText.text = parent.name
                 itemBinding.arrowImage.rotation = -90.0f
             }
-            (holder as? CityViewHolder)?.apply {
+            (holder as? CityVH)?.apply {
                 itemBinding.titleText.text = parent.name
                 itemBinding.arrowImage.rotation = -90.0f
             }
@@ -159,8 +178,8 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
     ) {
 
         val arrowImage = when {
-            holder as? ProvinceViewHolder != null -> holder.itemBinding.arrowImage
-            holder as? CityViewHolder != null -> holder.itemBinding.arrowImage
+            holder as? ProvinceVH != null -> holder.itemBinding.arrowImage
+            holder as? CityVH != null -> holder.itemBinding.arrowImage
             else -> return
         }
         if (expand) {

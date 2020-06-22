@@ -36,9 +36,11 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     /**
      * 设置只展开一个group
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     var onlyOneGroupExpand = false
 
     /** 是否开启展开动画 */
+    @Suppress("MemberVisibilityCanBePrivate")
     var enableAnimation = true
 
 
