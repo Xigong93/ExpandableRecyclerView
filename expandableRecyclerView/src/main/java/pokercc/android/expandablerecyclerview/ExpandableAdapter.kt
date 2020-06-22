@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * 可展开的数据适配器
@@ -14,8 +15,7 @@ import java.util.*
  * @author pokercc
  * @date 2019-6-2 11:38:13
 </Children></Parent> */
-abstract class ExpandableAdapter<Parent, Children> protected constructor(groups: List<Group<Parent, Children>>?) :
-    RecyclerView.Adapter<ViewHolder>() {
+abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     companion object {
         const val GROUP_VIEW_TYPE = 100
         const val CHILDREN_VIEW_TYPE = GROUP_VIEW_TYPE + 1
@@ -25,44 +25,36 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
         private val GROUP_EXPAND_CHANGE = Any()
     }
 
-    class Group<Parent, Children>(val parent: Parent, val children: List<Children>) {
-        var expanded = false
-        val viewHolderCount: Int get() = if (expanded) children.size + 1 else 1
-    }
-
     private sealed class RecyclerViewItem(
-        val viewType: Int,
-        val groupPosition: Int,
-        val childPosition: Int
+        val viewType: Int
     ) {
-        class Parent<T>(val data: T, groupPosition: Int) :
-            RecyclerViewItem(GROUP_VIEW_TYPE, groupPosition, -1)
+        class Parent(val groupPosition: Int) :
+            RecyclerViewItem(GROUP_VIEW_TYPE)
 
-        class Children<T>(val data: T, groupPosition: Int, childPosition: Int) :
-            RecyclerViewItem(CHILDREN_VIEW_TYPE, groupPosition, childPosition)
+        class Children(
+            val groupPosition: Int,
+            val childPosition: Int
+        ) : RecyclerViewItem(CHILDREN_VIEW_TYPE)
     }
 
-    private val groups: List<Group<Parent, Children>> = groups ?: emptyList()
     private val recyclerViewItemList: MutableList<RecyclerViewItem> = ArrayList()
-    private var onlyOneGroupExpand = false
-
-    init {
-        setDataInternal()
-    }
+    private val groupItemList: MutableList<RecyclerViewItem.Parent> = ArrayList()
+    private val expandState = HashMap<Int, Boolean>()
 
     /**
      * 设置只展开一个group
-     *
-     * @param onlyOneGroupExpand
      */
-    fun setOnlyOneGroupExpand(onlyOneGroupExpand: Boolean) {
-        this.onlyOneGroupExpand = onlyOneGroupExpand
-    }
+    var onlyOneGroupExpand = false
+
+    /** 是否开启展开动画 */
+    var enableAnimation = true
+
 
     private val expandableItemAnimator by lazy { ExpandableItemAnimator(this) }
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         recyclerView.itemAnimator = expandableItemAnimator
+        setDataInternal()
     }
 
     /**
@@ -73,36 +65,39 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun isExpand(groupPosition: Int): Boolean {
-        return groups[groupPosition].expanded
+        return expandState[groupPosition] ?: false
+    }
+
+    private fun setExpand(groupPosition: Int, expand: Boolean) {
+        expandState[groupPosition] = expand
     }
 
     private fun setDataInternal() {
         check(Looper.myLooper() == Looper.getMainLooper()) { "must execute on main thread" }
-        recyclerViewItemList.clear()
-        for (i in groups.indices) {
-            val group =
-                groups[i]
-            recyclerViewItemList.add(RecyclerViewItem.Parent(group.parent, i))
-            if (group.expanded) {
-                for (j in group.children.indices) {
-                    recyclerViewItemList.add(RecyclerViewItem.Children(group.children[j], i, j))
-                }
+        this.recyclerViewItemList.clear()
+        this.groupItemList.clear()
+        for (i in 0 until getGroupCount()) {
+            val parent = RecyclerViewItem.Parent(i)
+            recyclerViewItemList.add(parent)
+            groupItemList.add(parent)
+            if (!isExpand(i)) continue
+            for (j in 0 until getChildrenCount(i)) {
+                recyclerViewItemList.add(RecyclerViewItem.Children(i, j))
             }
         }
     }
 
-    private fun performGroupExpandChange(group: Int, expand: Boolean) {
-        val groupLayoutPosition = getGroupLayoutPosition(group)
-        onGroupExpandChange(group, groupLayoutPosition, expand)
-        notifyGroupChange(group, GROUP_EXPAND_CHANGE)
+    private fun performGroupExpandChange(groupPosition: Int, expand: Boolean) {
+        val groupLayoutPosition = getGroupAdapterPosition(groupPosition)
+        onGroupExpandChange(groupPosition, groupLayoutPosition, expand)
+        notifyGroupChange(groupPosition, GROUP_EXPAND_CHANGE)
     }
 
     open fun onGroupExpandChange(
-        group: Int,
+        groupPosition: Int,
         adapterPosition: Int,
         expand: Boolean
-    ) {
-    }
+    ) = Unit
 
     /**
      * 通知group布局刷新
@@ -112,7 +107,7 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun notifyGroupChange(groupPosition: Int, refreshToken: Any?) {
-        notifyItemChanged(getGroupLayoutPosition(groupPosition), refreshToken)
+        notifyItemChanged(getGroupAdapterPosition(groupPosition), refreshToken)
     }
 
     /**
@@ -127,11 +122,9 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
         childrenPosition: Int,
         refreshToken: Any?
     ) {
-        val item =
-            groups[groupPosition]
-        if (item.expanded) {
+        if (isExpand(groupPosition)) {
             notifyItemChanged(
-                getChildrenLayoutPosition(groupPosition, childrenPosition),
+                getChildrenAdapterPosition(groupPosition, childrenPosition),
                 refreshToken
             )
         }
@@ -140,50 +133,53 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
     /**
      * 展开一个group
      *
-     * @param group
+     * @param groupPosition
      * @param anim
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun expandGroup(group: Int, anim: Boolean) {
+    fun expandGroup(groupPosition: Int, anim: Boolean) {
         if (onlyOneGroupExpand) {
-            for (i in groups.indices) {
-                val item =
-                    groups[i]
-                if (i == group && !item.expanded) {
-                    item.expanded = true
+            for (i in 0 until getGroupCount()) {
+                val item = groupItemList[i]
+                if (i == groupPosition && !isExpand(i)) {
+                    setExpand(i, true)
                     // 改变数据源布局刷新
                     setDataInternal()
                     performGroupExpandChange(i, true)
                     if (anim) {
                         notifyItemRangeInserted(
-                            getGroupLayoutPosition(group) + 1,
-                            item.children.size
+                            getGroupAdapterPosition(groupPosition) + 1,
+                            getChildrenCount(item.groupPosition)
                         )
                     } else {
                         notifyDataSetChanged()
                     }
-                } else if (item.expanded) {
-                    item.expanded = false
+                } else if (isExpand(i)) {
+                    setExpand(i, false)
                     // 改变数据源布局刷新
                     setDataInternal()
                     performGroupExpandChange(i, false)
                     if (anim) {
-                        notifyItemRangeRemoved(getGroupLayoutPosition(i) + 1, item.children.size)
+                        notifyItemRangeRemoved(
+                            getGroupAdapterPosition(i) + 1, getChildrenCount(item.groupPosition)
+                        )
                     } else {
                         notifyDataSetChanged()
                     }
                 }
             }
         } else {
-            val item =
-                groups[group]
-            if (!item.expanded) {
-                item.expanded = true
+            val item = groupItemList[groupPosition]
+            if (!isExpand(groupPosition)) {
+                setExpand(groupPosition, true)
                 // 改变数据源布局刷新
                 setDataInternal()
-                performGroupExpandChange(group, true)
+                performGroupExpandChange(groupPosition, true)
                 if (anim) {
-                    notifyItemRangeInserted(getGroupLayoutPosition(group) + 1, item.children.size)
+                    notifyItemRangeInserted(
+                        getGroupAdapterPosition(groupPosition) + 1,
+                        getChildrenCount(item.groupPosition)
+                    )
                 } else {
                     notifyDataSetChanged()
                 }
@@ -194,48 +190,51 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
     /**
      * 折叠一个group
      *
-     * @param group
+     * @param groupPosition
      * @param anim
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun collapseGroup(group: Int, anim: Boolean) {
-        val item =
-            groups[group]
-        if (item.expanded) {
-            item.expanded = false
+    fun collapseGroup(groupPosition: Int, anim: Boolean) {
+        val item = groupItemList[groupPosition]
+        if (isExpand(groupPosition)) {
+            setExpand(groupPosition, false)
             // 改变数据源布局刷新
             setDataInternal()
             if (anim) {
-                notifyItemRangeRemoved(getGroupLayoutPosition(group) + 1, item.children.size)
+                notifyItemRangeRemoved(
+                    getGroupAdapterPosition(groupPosition) + 1,
+                    getChildrenCount(item.groupPosition)
+                )
             } else {
                 notifyDataSetChanged()
             }
-            performGroupExpandChange(group, false)
+            performGroupExpandChange(groupPosition, false)
         }
     }
 
-    private fun getGroupLayoutPosition(groupPosition: Int): Int {
-        var layoutPosition = 0
-        val itemData =
-            groups.subList(0, groupPosition)
-        for (item in itemData) {
-            layoutPosition += item.viewHolderCount
+    private fun getGroupAdapterPosition(groupPosition: Int): Int {
+        var position = 0
+        for (i in 0 until groupPosition) {
+            position++
+            if (isExpand(i)) {
+                position += getChildrenCount(i)
+            }
         }
-        return layoutPosition
+        return position
     }
 
-    private fun getChildrenLayoutPosition(groupPosition: Int, childrenPosition: Int): Int {
-        return getGroupLayoutPosition(groupPosition) + 1 + childrenPosition
+    private fun getChildrenAdapterPosition(groupPosition: Int, childrenPosition: Int): Int {
+        return getGroupAdapterPosition(groupPosition) + 1 + childrenPosition
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
-        return if (viewType == GROUP_VIEW_TYPE) {
-            val parentViewHolder = onCreateParentViewHolder(viewGroup)
+    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): VH {
+        return if (isGroup(viewType)) {
+            val parentViewHolder = onCreateParentViewHolder(viewGroup, viewType)
             parentViewHolder.itemView.z = 1f
             parentViewHolder
         } else {
             //            childrenViewHolder.itemView.setZ(100);
-            onCreateChildrenViewHolder(viewGroup)
+            onCreateChildrenViewHolder(viewGroup, viewType)
         }
     }
 
@@ -243,50 +242,52 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
         return recyclerViewItemList[position].viewType
     }
 
-    override fun onBindViewHolder(viewHolder: ViewHolder, i: Int) {
-        throw UnsupportedOperationException("not implementation")
-    }
+
+    override fun onBindViewHolder(viewHolder: VH, position: Int) = Unit
 
     override fun onBindViewHolder(
-        holder: ViewHolder,
+        holder: VH,
         position: Int,
         payloads: List<Any>
     ) {
-        val item =
-            recyclerViewItemList[holder.adapterPosition]
-        holder.itemView.setTag(
-            GROUP_INDEX_FLAG,
-            item.groupPosition
-        )
-        holder.itemView.setTag(
-            CHILDREN_INDEX_FLAG,
-            item.childPosition
-        )
-        if (getItemViewType(holder.adapterPosition) == GROUP_VIEW_TYPE) {
-            @Suppress("UNCHECKED_CAST")
-            performBindParentViewHolder(item as RecyclerViewItem.Parent<Parent>, holder, payloads)
+        val item = recyclerViewItemList[position]
+        if (isGroup(getItemViewType(position))) {
+            val parent = item as RecyclerViewItem.Parent
+            holder.itemView.setTag(
+                GROUP_INDEX_FLAG,
+                parent.groupPosition
+            )
+            performBindParentViewHolder(item, holder, payloads)
         } else {
-            @Suppress("UNCHECKED_CAST")
+            val children = item as RecyclerViewItem.Children
+            holder.itemView.setTag(
+                GROUP_INDEX_FLAG,
+                children.groupPosition
+            )
+
+            holder.itemView.setTag(
+                CHILDREN_INDEX_FLAG,
+                item.childPosition
+            )
             onBindChildrenViewHolder(
                 holder,
-                (item as RecyclerViewItem.Children<Children>).data,
                 item.groupPosition,
                 item.childPosition,
                 payloads
             )
 
         }
+        onBindViewHolder(holder, position)
     }
 
     private fun performBindParentViewHolder(
-        recyclerViewItem: RecyclerViewItem.Parent<Parent>,
-        holder: ViewHolder,
+        recyclerViewItem: RecyclerViewItem.Parent,
+        holder: VH,
         payloads: List<Any>
     ) {
         val expand = isExpand(recyclerViewItem.groupPosition)
         onBindParentViewHolder(
             holder,
-            recyclerViewItem.data,
             recyclerViewItem.groupPosition,
             expand,
             payloads
@@ -295,9 +296,9 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
             holder.itemView.setTag(GROUP_IS_EXPAND_FLAG, expand)
             holder.itemView.setOnClickListener {
                 if (isExpand(recyclerViewItem.groupPosition)) {
-                    collapseGroup(recyclerViewItem.groupPosition, true)
+                    collapseGroup(recyclerViewItem.groupPosition, enableAnimation)
                 } else {
-                    expandGroup(recyclerViewItem.groupPosition, true)
+                    expandGroup(recyclerViewItem.groupPosition, enableAnimation)
                 }
             }
         }
@@ -307,11 +308,13 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
                     GROUP_IS_EXPAND_FLAG,
                     expand
                 )
-                val animDuration =
-                    if (expand) expandableItemAnimator.addDuration else expandableItemAnimator.removeDuration
+                val animDuration = if (expand) {
+                    expandableItemAnimator.addDuration
+                } else {
+                    expandableItemAnimator.removeDuration
+                }
                 onParentViewHolderExpandChange(
                     holder,
-                    recyclerViewItem.data,
                     recyclerViewItem.groupPosition,
                     animDuration,
                     expand
@@ -321,43 +324,46 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
     }
 
 
-    protected abstract fun onCreateParentViewHolder(viewGroup: ViewGroup): ViewHolder
-    protected abstract fun onCreateChildrenViewHolder(viewGroup: ViewGroup): ViewHolder
+    final override fun getItemCount(): Int {
+        return recyclerViewItemList.size
+    }
+
+    open fun isGroup(viewType: Int): Boolean = viewType == GROUP_VIEW_TYPE
+
+    protected abstract fun onCreateParentViewHolder(
+        viewGroup: ViewGroup, viewType: Int
+    ): VH
+
+    protected abstract fun onCreateChildrenViewHolder(
+        viewGroup: ViewGroup,
+        viewType: Int
+    ): VH
+
 
     protected abstract fun onBindChildrenViewHolder(
-        holder: ViewHolder,
-        children: Children,
+        holder: VH,
         groupPosition: Int,
         childrenPosition: Int,
         payloads: List<Any>
     )
 
-
     protected abstract fun onBindParentViewHolder(
-        holder: ViewHolder,
-        parent: Parent,
+        holder: VH,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
     )
 
     protected abstract fun onParentViewHolderExpandChange(
-        holder: ViewHolder,
-        parent: Parent,
+        holder: VH,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean
     )
 
-    override fun getItemCount(): Int {
-        return recyclerViewItemList.size
-    }
 
-    val groupCount: Int get() = groups.size
-
-    fun getChildrenCount(groupIndex: Int): Int {
-        return groups[groupIndex].children.size
-    }
+    abstract fun getGroupCount(): Int
+    abstract fun getChildrenCount(groupPosition: Int): Int
 
     /**
      * 获取组index
@@ -365,7 +371,7 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
      * @param viewHolder
      * @return
      */
-    fun getGroupIndex(viewHolder: ViewHolder): Int =
+    fun getGroupPosition(viewHolder: ViewHolder): Int =
         viewHolder.itemView.getTag(GROUP_INDEX_FLAG)?.let { it as? Int }
             ?: RecyclerView.NO_POSITION
 
@@ -376,7 +382,7 @@ abstract class ExpandableAdapter<Parent, Children> protected constructor(groups:
      * @param viewHolder
      * @return
      */
-    fun getChildrenIndex(viewHolder: ViewHolder): Int =
+    fun getChildrenPosition(viewHolder: ViewHolder): Int =
         viewHolder.itemView.getTag(CHILDREN_INDEX_FLAG)?.let { it as? Int }
             ?: RecyclerView.NO_POSITION
 

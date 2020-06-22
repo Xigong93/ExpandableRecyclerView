@@ -35,9 +35,9 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
     ArrayList<RecyclerView.ViewHolder> mMoveAnimations = new ArrayList<>();
     ArrayList<RecyclerView.ViewHolder> mRemoveAnimations = new ArrayList<>();
     ArrayList<RecyclerView.ViewHolder> mChangeAnimations = new ArrayList<>();
-    private final ExpandableAdapter<?, ?> expandableAdapter;
+    private final ExpandableAdapter<?> expandableAdapter;
 
-    public ExpandableItemAnimator(ExpandableAdapter<?, ?> expandableAdapter) {
+    public ExpandableItemAnimator(ExpandableAdapter<?>  expandableAdapter) {
         this.expandableAdapter = expandableAdapter;
         int animDuration = 250;
         setAddDuration(animDuration);
@@ -184,7 +184,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
     @Override
     public boolean animateRemove(final RecyclerView.ViewHolder holder) {
         Log.d(LOG_TAG, "animateRemove(" + holder + ")");
-        int groupIndex = expandableAdapter.getGroupIndex(holder);
+        int groupIndex = expandableAdapter.getGroupPosition(holder);
         resetAnimation(holder);
         if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
             // 最后一组的执行一个展开动画，其他的不执行动画
@@ -250,7 +250,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
     @Override
     public boolean animateAdd(final RecyclerView.ViewHolder holder) {
         Log.d(LOG_TAG, "animateAdd(" + holder + ")");
-        int groupIndex = expandableAdapter.getGroupIndex(holder);
+        int groupIndex = expandableAdapter.getGroupPosition(holder);
         resetAnimation(holder);
         if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
             // 最后一组的执行一个展开动画，其他的不执行动画

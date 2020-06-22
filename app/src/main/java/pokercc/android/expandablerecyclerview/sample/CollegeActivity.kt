@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
-import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.CityItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.CollegeActivityBinding
+import pokercc.android.expandablerecyclerview.sample.databinding.CollegeItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.ProvinceItemBinding
 
 class CollegeActivity : AppCompatActivity() {
@@ -35,8 +35,7 @@ class CollegeActivity : AppCompatActivity() {
             ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         ).get()
         viewModel.colleges.observe(this, Observer {
-            val countryAdapter =
-                CollegeAdapter(it.map { z -> ExpandableAdapter.Group(z, z.colleges) })
+            val countryAdapter = CollegeAdapter(it)
             binding.recyclerView.adapter = countryAdapter
         })
         binding.recyclerView.addItemDecoration(ExpandableItemDecoration())
@@ -49,12 +48,14 @@ class CollegeActivity : AppCompatActivity() {
 private class CollegeZoneViewHolder(val itemBinding: ProvinceItemBinding) :
     RecyclerView.ViewHolder(itemBinding.root)
 
-private class CollegeHolder(val itemBinding: CityItemBinding) :
+private class CollegeHolder(val itemBinding: CollegeItemBinding) :
     RecyclerView.ViewHolder(itemBinding.root)
 
-private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>) :
-    ExpandableAdapter<CollegeZone, College>(data) {
-    override fun onCreateParentViewHolder(viewGroup: ViewGroup): RecyclerView.ViewHolder {
+private class CollegeAdapter(private val data: List<CollegeZone>) :
+    ExpandableAdapter<RecyclerView.ViewHolder>() {
+    override fun onCreateParentViewHolder(
+        viewGroup: ViewGroup, viewType: Int
+    ): RecyclerView.ViewHolder {
         return CollegeZoneViewHolder(
             ProvinceItemBinding.inflate(
                 LayoutInflater.from(viewGroup.context),
@@ -64,9 +65,12 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
         )
     }
 
-    override fun onCreateChildrenViewHolder(viewGroup: ViewGroup): RecyclerView.ViewHolder {
+
+    override fun onCreateChildrenViewHolder(
+        viewGroup: ViewGroup, viewType: Int
+    ): RecyclerView.ViewHolder {
         return CollegeHolder(
-            CityItemBinding.inflate(
+            CollegeItemBinding.inflate(
                 LayoutInflater.from(viewGroup.context),
                 viewGroup,
                 false
@@ -77,11 +81,11 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
 
     override fun onBindChildrenViewHolder(
         holder: RecyclerView.ViewHolder,
-        children: College,
         groupPosition: Int,
         childrenPosition: Int,
         payloads: List<Any>
     ) {
+        val children = data[groupPosition].colleges[childrenPosition]
         (holder as CollegeHolder).apply {
             itemBinding.titleText.text = children.name
         }
@@ -90,12 +94,12 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
 
     override fun onBindParentViewHolder(
         holder: RecyclerView.ViewHolder,
-        parent: CollegeZone,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
     ) {
         if (payloads.isEmpty()) {
+            val parent = data[groupPosition]
             (holder as CollegeZoneViewHolder).apply {
                 itemBinding.titleText.text = parent.name
                 itemBinding.arrowImage.rotation = -90.0f
@@ -106,7 +110,6 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
 
     override fun onParentViewHolderExpandChange(
         holder: RecyclerView.ViewHolder,
-        parent: CollegeZone,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean
@@ -126,5 +129,9 @@ private class CollegeAdapter(private val data: List<Group<CollegeZone, College>>
 
     }
 
+
+    override fun getGroupCount(): Int = data.size
+
+    override fun getChildrenCount(groupPosition: Int): Int = data[groupPosition].colleges.size
 
 }
