@@ -1,6 +1,5 @@
 package pokercc.android.expandablerecyclerview.sample
 
-import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
@@ -16,7 +15,8 @@ data class College(
 data class CollegeZone(
     val id: String,
     val sort: Int,
-    val name: String
+    val name: String,
+    val city: Boolean = false
 ) {
     @Transient
     val colleges = ArrayList<College>()

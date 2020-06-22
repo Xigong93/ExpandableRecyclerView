@@ -19,9 +19,10 @@ class ExpandableItemDecoration(@ColorInt private val backgroundColor: Int = Colo
         // 需要把ChildrenViewHolder 超出Group的裁剪掉
         // 把下面的空隙补上白色，防止动画穿帮
         var lastParentViewHolder: RecyclerView.ViewHolder? = null
+        val expandableAdapter = parent.adapter as? ExpandableAdapter<*> ?: return
         for (child in parent.children) {
             val childViewHolder = parent.getChildViewHolder(child)
-            if (childViewHolder.itemViewType == ExpandableAdapter.GROUP_VIEW_TYPE &&
+            if (expandableAdapter.isGroup(childViewHolder.itemViewType) &&
                 childViewHolder.adapterPosition > lastParentViewHolder?.adapterPosition ?: -1
             ) {
                 lastParentViewHolder = childViewHolder

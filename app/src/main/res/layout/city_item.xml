@@ -13,7 +13,7 @@
         android:layout_marginLeft="20dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
-        android:textColor="#000"
+        android:textColor="#297be8"
         android:textSize="20sp"
         tool:text="标题" />
 

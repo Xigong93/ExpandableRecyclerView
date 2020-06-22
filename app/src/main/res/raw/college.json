@@ -3,11 +3,13 @@
     {
       "id":"bj",
       "name":"北京",
+      "city": true,
       "sort":1
     },
     {
       "id":"sh",
       "name":"上海",
+      "city": true,
       "sort":2
     },
     {
@@ -53,6 +55,7 @@
     {
       "id":"tj",
       "name":"天津",
+      "city": true,
       "sort":11
     },
     {
@@ -68,6 +71,7 @@
     {
       "id":"cq",
       "name":"重庆",
+      "city": true,
       "sort":14
     },
     {
