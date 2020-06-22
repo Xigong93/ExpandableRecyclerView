@@ -27,7 +27,7 @@ public class HeavyTextView extends TextView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        SystemClock.sleep(3);
+//        SystemClock.sleep(3);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 }
