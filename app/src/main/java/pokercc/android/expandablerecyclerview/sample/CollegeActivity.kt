@@ -157,11 +157,12 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
         animDuration: Long,
         expand: Boolean
     ) {
-        var arrowImage: View? = (holder as? ProvinceViewHolder)?.itemBinding?.arrowImage
-        if (arrowImage == null) {
-            arrowImage = (holder as? CityViewHolder)?.itemBinding?.arrowImage
+
+        val arrowImage = when {
+            holder as? ProvinceViewHolder != null -> holder.itemBinding.arrowImage
+            holder as? CityViewHolder != null -> holder.itemBinding.arrowImage
+            else -> return
         }
-        arrowImage ?: return
         if (expand) {
             arrowImage.animate()
                 .setDuration(animDuration)
