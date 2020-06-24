@@ -14,9 +14,11 @@ import kotlin.collections.HashMap
  * */
 abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     companion object {
-        const val GROUP_IS_EXPAND_FLAG = 3 shl 24
-        const val GROUP_INDEX_FLAG = 3 shl 24 + 1
-        const val CHILD_INDEX_FLAG = 3 shl 24 + 2
+        @Suppress("MayBeConstant")
+        val DEBUG = true
+        private const val GROUP_IS_EXPAND_FLAG = 3 shl 24
+        private const val GROUP_INDEX_FLAG = 3 shl 24 + 1
+        private const val CHILD_INDEX_FLAG = 3 shl 24 + 2
         private val GROUP_EXPAND_CHANGE = Any()
     }
 
@@ -206,7 +208,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         }
     }
 
-    private fun getGroupAdapterPosition(groupPosition: Int): Int {
+    fun getGroupAdapterPosition(groupPosition: Int): Int {
         var position = 0
         for (i in 0 until groupPosition) {
             position++
@@ -217,7 +219,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         return position
     }
 
-    private fun getChildAdapterPosition(groupPosition: Int, childPosition: Int): Int {
+    fun getChildAdapterPosition(groupPosition: Int, childPosition: Int): Int {
         return getGroupAdapterPosition(groupPosition) + 1 + childPosition
     }
 

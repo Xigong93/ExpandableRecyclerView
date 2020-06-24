@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandStickyHeaderDecoration
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
+import pokercc.android.expandablerecyclerview.ExpandableLayoutManager
 import pokercc.android.expandablerecyclerview.sample.databinding.*
 import java.lang.IllegalArgumentException
 
@@ -39,7 +40,7 @@ class CollegeActivity : AppCompatActivity() {
         })
         binding.recyclerView.addItemDecoration(ExpandableItemDecoration())
         binding.recyclerView.addItemDecoration(ExpandStickyHeaderDecoration())
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        binding.recyclerView.layoutManager = ExpandableLayoutManager(this)
         viewModel.loadColleges()
     }
 }

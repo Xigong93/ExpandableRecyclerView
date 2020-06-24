@@ -4,6 +4,8 @@ import android.graphics.Canvas
 import android.util.Log
 import androidx.core.view.ViewCompat
 import androidx.core.view.children
+import androidx.core.view.get
+import androidx.core.view.isEmpty
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -14,11 +16,22 @@ class ExpandStickyHeaderDecoration : RecyclerView.ItemDecoration() {
         private const val LOG_TAG = "ExpandStickyHeaderD"
     }
 
+
+    /* |------
+     * |------ 0
+     * |
+     * |
+     * |------ last
+     */
     override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDraw(c, parent, state)
         val expandableAdapter = parent.adapter as? ExpandableAdapter<*> ?: return
+        if (parent.isEmpty()) return
+        val firstView = parent[0]
+        val viewHolder = parent.getChildViewHolder(firstView)
+
+        // Group.top+translateY > children[0]
         for (child in parent.children) {
-            val viewHolder = parent.getChildViewHolder(child)
             if (!expandableAdapter.isGroup(viewHolder.itemViewType)) continue
             val groupPosition = expandableAdapter.getGroupPosition(viewHolder)
             val expand = expandableAdapter.isExpand(groupPosition)
@@ -26,8 +39,7 @@ class ExpandStickyHeaderDecoration : RecyclerView.ItemDecoration() {
 //            ViewCompat.offsetTopAndBottom(viewHolder.itemView, -viewHolder.itemView.top)
             val itemView = viewHolder.itemView
             val nextViewHolder = findGroupViewHolder(parent, groupPosition + 1)
-
-            // top+tY+height<=new.top
+            // top+tY + height <= new.top
             if (nextViewHolder != null && nextViewHolder.itemView.top < itemView.height) {
                 itemView.translationY =
                     -itemView.top.toFloat() - (itemView.height - nextViewHolder.itemView.top)

@@ -8,4 +8,8 @@
 
 Todo Features：
 - 支持Sticky Header
-- 点击最后一个Group展开时，可以自动上滑
+- 展开Group,自动置顶
+
+
+注意事项:
+- ItemView请设置不透明的背景，否则会发生穿透的情况

@@ -30,7 +30,8 @@ class ExpandableItemDecoration(@ColorInt private val backgroundColor: Int = Colo
         }
         val lastParentItemView = lastParentViewHolder?.itemView ?: return
         // 如果最后一个展开了，就不遮白布了
-        if (lastParentItemView.getTag(ExpandableAdapter.GROUP_IS_EXPAND_FLAG) == true) return
+        val viewHolder = parent.getChildViewHolder(lastParentItemView)
+        if (expandableAdapter.isExpand(expandableAdapter.getGroupPosition(viewHolder))) return
         c.drawRect(
             parent.paddingStart.toFloat(),
             lastParentItemView.bottom + lastParentItemView.translationY,
