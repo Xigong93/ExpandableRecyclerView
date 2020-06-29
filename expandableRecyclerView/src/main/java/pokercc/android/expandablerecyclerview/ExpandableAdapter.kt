@@ -1,7 +1,11 @@
 package pokercc.android.expandablerecyclerview
 
+import android.graphics.Color
 import android.os.Looper
+import android.util.SparseBooleanArray
 import android.view.ViewGroup
+import androidx.annotation.ColorInt
+import androidx.core.util.set
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.*
@@ -12,11 +16,11 @@ import kotlin.collections.HashMap
  * @author pokercc
  * @date 2019-6-2 11:38:13
  * */
-abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
+abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor: Int = Color.WHITE) :
+    RecyclerView.Adapter<VH>() {
     companion object {
         @Suppress("MayBeConstant")
-        val DEBUG = true
-        private const val GROUP_IS_EXPAND_FLAG = 3 shl 24
+        val DEBUG = BuildConfig.DEBUG
         private const val GROUP_INDEX_FLAG = 3 shl 24 + 1
         private const val CHILD_INDEX_FLAG = 3 shl 24 + 2
         private val GROUP_EXPAND_CHANGE = Any()
@@ -33,7 +37,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
 
     private val items: MutableList<RealItem> = ArrayList()
     private val groupItems: MutableList<RealItem.Parent> = ArrayList()
-    private val expandState = HashMap<Int, Boolean>()
+    private val expandState = SparseBooleanArray()
 
     /**
      * 设置只展开一个group
@@ -47,7 +51,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
 
 
     private val expandableItemAnimator by lazy { ExpandableItemAnimator(this) }
-    private val expandableItemDecoration by lazy { ExpandableItemDecoration() }
+    private val expandableItemDecoration by lazy { ExpandableItemDecoration(backgroundColor) }
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         recyclerView.itemAnimator = expandableItemAnimator
@@ -304,7 +308,6 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
             payloads
         )
         if (payloads.isEmpty()) {
-            holder.itemView.setTag(GROUP_IS_EXPAND_FLAG, expand)
             holder.itemView.setOnClickListener {
                 if (isExpand(realItem.groupPosition)) {
                     collapseGroup(realItem.groupPosition, enableAnimation)
@@ -315,10 +318,6 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         }
         for (payload in payloads) {
             if (GROUP_EXPAND_CHANGE === payload) {
-                holder.itemView.setTag(
-                    GROUP_IS_EXPAND_FLAG,
-                    expand
-                )
                 val animDuration = if (expand) {
                     expandableItemAnimator.addDuration
                 } else {
