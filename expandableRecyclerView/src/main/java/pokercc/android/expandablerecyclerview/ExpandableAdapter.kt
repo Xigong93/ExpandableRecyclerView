@@ -47,9 +47,12 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
 
 
     private val expandableItemAnimator by lazy { ExpandableItemAnimator(this) }
+    private val expandableItemDecoration by lazy { ExpandableItemDecoration() }
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         recyclerView.itemAnimator = expandableItemAnimator
+        recyclerView.removeItemDecoration(expandableItemDecoration)
+        recyclerView.addItemDecoration(expandableItemDecoration)
         setDataInternal()
     }
 
@@ -59,7 +62,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
      * @param groupPosition
      * @return
      */
-    @Suppress("MemberVisibilityCanBePrivate")
+    @Suppress("MemberVisibilityCanBePrivate", "MemberVisibilityCanBePrivate")
     fun isExpand(groupPosition: Int): Boolean {
         return expandState[groupPosition] ?: false
     }
@@ -208,6 +211,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         }
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun getGroupAdapterPosition(groupPosition: Int): Int {
         var position = 0
         for (i in 0 until groupPosition) {
@@ -219,6 +223,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         return position
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun getChildAdapterPosition(groupPosition: Int, childPosition: Int): Int {
         return getGroupAdapterPosition(groupPosition) + 1 + childPosition
     }

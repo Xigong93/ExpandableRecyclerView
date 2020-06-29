@@ -38,9 +38,7 @@ class CollegeActivity : AppCompatActivity() {
             val countryAdapter = CollegeAdapter(it)
             binding.recyclerView.adapter = countryAdapter
         })
-        binding.recyclerView.addItemDecoration(ExpandableItemDecoration())
-        binding.recyclerView.addItemDecoration(ExpandStickyHeaderDecoration())
-        binding.recyclerView.layoutManager = ExpandableLayoutManager(this)
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
         viewModel.loadColleges()
     }
 }
