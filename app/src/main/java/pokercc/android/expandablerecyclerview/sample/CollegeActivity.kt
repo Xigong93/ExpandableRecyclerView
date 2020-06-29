@@ -11,10 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import pokercc.android.expandablerecyclerview.ExpandStickyHeaderDecoration
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
-import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
-import pokercc.android.expandablerecyclerview.ExpandableLayoutManager
 import pokercc.android.expandablerecyclerview.sample.databinding.*
 import java.lang.IllegalArgumentException
 
