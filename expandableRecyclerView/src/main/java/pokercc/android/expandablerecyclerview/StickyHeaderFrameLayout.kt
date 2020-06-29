@@ -3,14 +3,14 @@ package pokercc.android.expandablerecyclerview
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.util.Log
 import android.view.Gravity
 import android.view.View
+import android.widget.Adapter
 import android.widget.FrameLayout
-import androidx.core.view.children
-import androidx.core.view.get
-import androidx.core.view.isEmpty
-import androidx.core.view.isVisible
+import androidx.core.view.*
 import androidx.recyclerview.widget.RecyclerView
+import java.lang.ref.WeakReference
 
 class StickyHeaderFrameLayout @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -24,6 +24,7 @@ class StickyHeaderFrameLayout @JvmOverloads constructor(
         super.onViewAdded(child)
         if (child is RecyclerView) {
             child.addItemDecoration(stickyHeaderDecoration)
+            child.adapter
         }
     }
 
@@ -34,7 +35,7 @@ class StickyHeaderFrameLayout @JvmOverloads constructor(
             child.removeItemDecoration(stickyHeaderDecoration)
         }
     }
-    
+
     override fun onGroupShow(
         recyclerView: RecyclerView,
         expandableAdapter: ExpandableAdapter<RecyclerView.ViewHolder>,
@@ -67,22 +68,17 @@ class StickyHeaderFrameLayout @JvmOverloads constructor(
 /**
  * 固定头的装饰器
  */
-class StickyHeaderDecoration(private val callback: Callback) : RecyclerView.ItemDecoration() {
+private class StickyHeaderDecoration(private val callback: Callback) :
+    RecyclerView.ItemDecoration() {
     companion object {
         private const val LOG_TAG = "ExpandStickyHeaderD"
     }
 
 
-    private var groupPosition = -1
-    private var groupItemViewType: Int? = null
-    private var groupViewHolder: RecyclerView.ViewHolder? = null
+    private var headerGroupPosition = -1
+    private var headerViewType: Int? = null
+    private var headerViewHolder: RecyclerView.ViewHolder? = null
 
-    /* |------
-     * |------ 0
-     * |
-     * |
-     * |------ last
-     */
     override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDraw(c, parent, state)
         val expandableAdapter =
@@ -90,38 +86,63 @@ class StickyHeaderDecoration(private val callback: Callback) : RecyclerView.Item
         if (parent.isEmpty()) return
         val viewHolder = parent.getChildViewHolder(parent[0])
         val groupPosition = expandableAdapter.getGroupPosition(viewHolder)
-        if (!expandableAdapter.isExpand(groupPosition)) {
+        val animationRunning = state.willRunPredictiveAnimations()
+                || state.willRunSimpleAnimations()
+                || viewHolder.itemView.hasTransientState()
+                || parent.isAnimating
+        if (ExpandableAdapter.DEBUG) {
+            Log.d(LOG_TAG, "animationRunning:${animationRunning}")
+        }
+
+        if (!animationRunning && !expandableAdapter.isExpand(groupPosition)) {
             callback.onGroupHide()
+            if (ExpandableAdapter.DEBUG) {
+                Log.d(LOG_TAG, "onGroupHide1")
+            }
             return
         }
-        val groupItemViewType = expandableAdapter.getGroupItemViewType(groupPosition)
+        if (expandableAdapter.isExpand(groupPosition)) {
+            val groupItemViewType = expandableAdapter.getGroupItemViewType(groupPosition)
+            // 创建数据
+            if (this.headerViewHolder == null || this.headerViewType != groupItemViewType) {
+                this.headerGroupPosition = -1
+                this.headerViewType = groupItemViewType
+                this.headerViewHolder =
+                    expandableAdapter.onCreateViewHolder(parent, groupItemViewType)
+            }
 
-        // 创建数据
-        if (this.groupViewHolder == null || this.groupItemViewType != groupItemViewType) {
-            this.groupPosition = -1
-            this.groupItemViewType = groupItemViewType
-            this.groupViewHolder = expandableAdapter.onCreateViewHolder(parent, groupItemViewType)
+            // 绑定数据
+            val headerViewHolder = this.headerViewHolder!!
+            if (this.headerGroupPosition != groupPosition) {
+                expandableAdapter.onBindViewHolder(
+                    headerViewHolder, expandableAdapter.getGroupAdapterPosition(groupPosition),
+                    emptyList()
+                )
+                this.headerGroupPosition = groupPosition
+            }
+
+
+            // 计算偏移量
+            val nextGroupView = findGroupViewHolder(parent, groupPosition + 1)?.itemView
+            var offset = 0f
+            if (nextGroupView != null) {
+                offset = nextGroupView.y - headerViewHolder.itemView.height
+                offset = minOf(offset, 0f)
+            }
+            callback.onGroupShow(parent, expandableAdapter, headerViewHolder, offset)
+            if (ExpandableAdapter.DEBUG) {
+                Log.d(LOG_TAG, "onGroupShow,offset:${offset}")
+            }
         }
 
-        // 绑定数据
-        val groupViewHolder = this.groupViewHolder!!
-        if (this.groupPosition != groupPosition) {
-            expandableAdapter.onBindViewHolder(
-                groupViewHolder, expandableAdapter.getGroupAdapterPosition(groupPosition),
-                emptyList()
-            )
-            this.groupPosition = groupPosition
+        // 隐藏Header
+        val groupView = findGroupViewHolder(parent, headerGroupPosition)?.itemView
+        if (groupView != null && (groupView.y) > 0) {
+            callback.onGroupHide()
+            if (ExpandableAdapter.DEBUG) {
+                Log.d(LOG_TAG, "onGroupHide2")
+            }
         }
-
-        // 计算偏移量
-        val nextViewHolder = findGroupViewHolder(parent, groupPosition + 1)
-        var offset = 0f
-        if (nextViewHolder != null) {
-            val view = nextViewHolder.itemView
-            offset = view.top + view.translationY - groupViewHolder.itemView.height
-            offset = minOf(offset, 0f)
-        }
-        callback.onGroupShow(parent, expandableAdapter, groupViewHolder, offset)
     }
 
     private fun findGroupViewHolder(
