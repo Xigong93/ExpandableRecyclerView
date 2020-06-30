@@ -163,7 +163,8 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
                     performGroupExpandChange(i, false)
                     if (anim) {
                         notifyItemRangeRemoved(
-                            getGroupAdapterPosition(i) + 1, getChildCount(item.groupPosition)
+                            getGroupAdapterPosition(i) + 1,
+                            getChildCount(item.groupPosition)
                         )
                     } else {
                         notifyDataSetChanged()
