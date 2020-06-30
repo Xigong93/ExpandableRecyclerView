@@ -48,15 +48,17 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
     @Suppress("MemberVisibilityCanBePrivate")
     var enableAnimation = true
 
-
-    private val expandableItemAnimator by lazy { ExpandableItemAnimator(this) }
-    private val expandableItemDecoration by lazy { ExpandableItemDecoration(backgroundColor) }
+    private var recyclerView: RecyclerView? = null
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
-        recyclerView.itemAnimator = expandableItemAnimator
-        recyclerView.removeItemDecoration(expandableItemDecoration)
-        recyclerView.addItemDecoration(expandableItemDecoration)
+        require(recyclerView is ExpandableRecyclerView)
+        this.recyclerView = recyclerView
         setDataInternal()
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        this.recyclerView = null
     }
 
     /**
@@ -75,7 +77,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
     }
 
     private fun setDataInternal() {
-        check(Looper.myLooper() == Looper.getMainLooper()) { "must execute on main thread" }
+        check(Looper.myLooper() == Looper.getMainLooper())
         this.items.clear()
         this.groupItems.clear()
         for (i in 0 until getGroupCount()) {
@@ -234,9 +236,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): VH {
         return if (isGroup(viewType)) {
-            val parentViewHolder = onCreateGroupViewHolder(viewGroup, viewType)
-            parentViewHolder.itemView.z = 1f
-            parentViewHolder
+            onCreateGroupViewHolder(viewGroup, viewType)
         } else {
             onCreateChildViewHolder(viewGroup, viewType)
         }
@@ -318,15 +318,16 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
         }
         for (payload in payloads) {
             if (GROUP_EXPAND_CHANGE === payload) {
+                val itemAnimator = recyclerView?.itemAnimator
                 val animDuration = if (expand) {
-                    expandableItemAnimator.addDuration
+                    itemAnimator?.addDuration
                 } else {
-                    expandableItemAnimator.removeDuration
+                    itemAnimator?.removeDuration
                 }
                 onGroupViewHolderExpandChange(
                     holder,
                     realItem.groupPosition,
-                    animDuration,
+                    animDuration ?: 300,
                     expand
                 )
             }
@@ -394,6 +395,5 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
     fun getChildPosition(viewHolder: ViewHolder): Int =
         viewHolder.itemView.getTag(CHILD_INDEX_FLAG)?.let { it as? Int }
             ?: RecyclerView.NO_POSITION
-
 
 }
