@@ -9,7 +9,6 @@ import androidx.core.util.set
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.*
-import kotlin.collections.HashMap
 
 /**
  * 可展开的数据适配器
@@ -106,11 +105,11 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
      * 通知group布局刷新
      *
      * @param groupPosition
-     * @param refreshToken
+     * @param payload
      */
     @Suppress("MemberVisibilityCanBePrivate")
-    fun notifyGroupChange(groupPosition: Int, refreshToken: Any?) {
-        notifyItemChanged(getGroupAdapterPosition(groupPosition), refreshToken)
+    fun notifyGroupChange(groupPosition: Int, payload: Any? = null) {
+        notifyItemChanged(getGroupAdapterPosition(groupPosition), payload)
     }
 
     /**
@@ -118,17 +117,17 @@ abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor:
      *
      * @param groupPosition
      * @param childPosition
-     * @param refreshToken
+     * @param payload
      */
     fun notifyChildChange(
         groupPosition: Int,
         childPosition: Int,
-        refreshToken: Any?
+        payload: Any? = null
     ) {
         if (isExpand(groupPosition)) {
             notifyItemChanged(
                 getChildAdapterPosition(groupPosition, childPosition),
-                refreshToken
+                payload
             )
         }
     }
