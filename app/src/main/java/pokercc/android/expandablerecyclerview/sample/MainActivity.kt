@@ -2,15 +2,9 @@ package pokercc.android.expandablerecyclerview.sample
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import pokercc.android.expandablerecyclerview.ExpandableAdapter
-import pokercc.android.expandablerecyclerview.ExpandableItemDecoration
+import pokercc.android.expandablerecyclerview.sample.college.CollegeActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.CityItemBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.ProvinceItemBinding
+import pokercc.android.expandablerecyclerview.sample.textbook.TextBookListActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,6 +13,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.collegeListButton.setOnClickListener {
             CollegeActivity.start(it.context)
+        }
+        binding.textBookListButton.setOnClickListener {
+            TextBookListActivity.start(it.context)
         }
     }
 }

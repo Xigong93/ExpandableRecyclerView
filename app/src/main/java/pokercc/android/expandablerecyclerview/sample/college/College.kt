@@ -1,4 +1,4 @@
-package pokercc.android.expandablerecyclerview.sample
+package pokercc.android.expandablerecyclerview.sample.college
 
 import com.squareup.moshi.JsonClass
 

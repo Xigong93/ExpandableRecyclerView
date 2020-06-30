@@ -1,4 +1,4 @@
-package pokercc.android.expandablerecyclerview.sample
+package pokercc.android.expandablerecyclerview.sample.college
 
 import android.animation.ObjectAnimator
 import android.content.Context
@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.LinearInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
@@ -18,6 +17,11 @@ import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.sample.databinding.*
 import java.lang.IllegalArgumentException
 
+/**
+ * 大学列表页面
+ * @author pokercc
+ * @date 2020-6-30 16:25:26
+ */
 class CollegeActivity : AppCompatActivity() {
     companion object {
         fun start(context: Context) {
@@ -35,7 +39,10 @@ class CollegeActivity : AppCompatActivity() {
             ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         ).get()
         viewModel.colleges.observe(this, Observer {
-            val countryAdapter = CollegeAdapter(it)
+            val countryAdapter =
+                CollegeAdapter(
+                    it
+                )
             binding.recyclerView.adapter = countryAdapter
         })
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
