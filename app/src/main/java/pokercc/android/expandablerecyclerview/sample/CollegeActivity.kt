@@ -1,11 +1,14 @@
 package pokercc.android.expandablerecyclerview.sample
 
+import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.view.animation.LinearInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
@@ -181,14 +184,17 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
             else -> return
         }
         if (expand) {
-            arrowImage.animate()
+            ObjectAnimator.ofFloat(arrowImage, View.ROTATION, 0f)
                 .setDuration(animDuration)
-                .rotation(0f)
                 .start()
+            // 不要使用这种动画，Item离屏之后，动画会取消
+//            arrowImage.animate()
+//                .setDuration(animDuration)
+//                .rotation(0f)
+//                .start()
         } else {
-            arrowImage.animate()
+            ObjectAnimator.ofFloat(arrowImage, View.ROTATION, -90f)
                 .setDuration(animDuration)
-                .rotation(-90.0f)
                 .start()
         }
 
