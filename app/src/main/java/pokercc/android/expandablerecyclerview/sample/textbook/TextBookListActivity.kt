@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ import pokercc.android.expandablerecyclerview.sample.databinding.ActivityTextBoo
 import pokercc.android.expandablerecyclerview.sample.databinding.TextBookGradeBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.TextBookTypeBinding
 import pokercc.android.expandablerecyclerview.sample.dpToPx
+import kotlin.math.ceil
 
 /**
  * 教材列表页面
@@ -42,21 +44,22 @@ class TextBookListActivity : AppCompatActivity() {
             this,
             ViewModelProvider.AndroidViewModelFactory.getInstance(application)
         )
-        val gridLayoutManager = GridLayoutManager(this, 3)
+        val spanCount = 3
+        val gridLayoutManager = GridLayoutManager(this, spanCount)
         binding.recyclerView.layoutManager = gridLayoutManager
-        binding.recyclerView.addItemDecoration(TextBookDecorator())
+        binding.recyclerView.addItemDecoration(TextBookDecorator(spanCount))
         viewModel = viewModelProvider.get(TextBookListViewModel::class.java)
         viewModel.loadData()
         viewModel.textBookLists.observe(this, Observer {
             val textBookAdapter = TextBookAdapter(it)
             binding.recyclerView.adapter = textBookAdapter
-            gridLayoutManager.spanSizeLookup = TextBookSpanLookup(textBookAdapter)
+            gridLayoutManager.spanSizeLookup = TextBookSpanLookup(spanCount, textBookAdapter)
         })
     }
 
 }
 
-private class TextBookDecorator : RecyclerView.ItemDecoration() {
+private class TextBookDecorator(private val spanCount: Int) : RecyclerView.ItemDecoration() {
     override fun getItemOffsets(
         outRect: Rect,
         view: View,
@@ -69,30 +72,46 @@ private class TextBookDecorator : RecyclerView.ItemDecoration() {
         val adapterPosition = parent.getChildAdapterPosition(view)
         val spanSize = spanSizeLookup.getSpanSize(adapterPosition)
         if (spanSize != 1) return
-        outRect.top = 15.dpToPx(parent.context).toInt()
-        when (spanSizeLookup.getSpanIndex(adapterPosition, 3)) {
+        val verticalPadding = 15.dpToPx(parent.context).toInt()
+        outRect.top = verticalPadding
+        when (spanSizeLookup.getSpanIndex(adapterPosition, spanCount)) {
             0 -> {
                 outRect.left = 20.dpToPx(parent.context).toInt()
                 outRect.right = 10.dpToPx(parent.context).toInt()
             }
-            1 -> {
-                outRect.right = 10.dpToPx(parent.context).toInt()
+            spanCount - 1 -> {
+                outRect.right = 20.dpToPx(parent.context).toInt()
             }
             else -> {
-                outRect.right = 20.dpToPx(parent.context).toInt()
-
+                outRect.right = 10.dpToPx(parent.context).toInt()
             }
         }
-
-
+        // 如果是Group的最后一行，给一个下边距
+        val expandableAdapter = parent.adapter as? ExpandableAdapter<*> ?: return
+        val viewHolder = parent.getChildViewHolder(view)
+        val groupPosition = expandableAdapter.getGroupPosition(viewHolder)
+        val childPosition = expandableAdapter.getChildPosition(viewHolder)
+        val childCount = expandableAdapter.getChildCount(groupPosition)
+        val rowInGroup = ceil((childPosition + 1) / spanCount.toFloat() - 1).toInt()
+        val maxRow = ceil(childCount / spanCount.toFloat() - 1).toInt()
+        if (rowInGroup == maxRow) {
+            outRect.bottom = verticalPadding
+        }
+        Log.d(
+            "TextBookDecorator",
+            "groupPosition:$groupPosition,childPosition:$childPosition,childCount:$childCount,rowInGroup:$rowInGroup,maxRow:$maxRow"
+        )
     }
 }
 
-private class TextBookSpanLookup(private val expandableAdapter: ExpandableAdapter<*>) :
+private class TextBookSpanLookup(
+    private val spanCount: Int,
+    private val expandableAdapter: ExpandableAdapter<*>
+) :
     GridLayoutManager.SpanSizeLookup() {
     override fun getSpanSize(position: Int): Int {
         val viewType = expandableAdapter.getItemViewType(position)
-        return if (expandableAdapter.isGroup(viewType)) 3 else 1
+        return if (expandableAdapter.isGroup(viewType)) spanCount else 1
     }
 
 }
