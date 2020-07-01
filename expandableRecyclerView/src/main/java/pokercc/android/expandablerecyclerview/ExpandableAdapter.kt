@@ -15,7 +15,7 @@ import java.util.*
  * @author pokercc
  * @date 2019-6-2 11:38:13
  * */
-abstract class ExpandableAdapter<VH : ViewHolder>(@ColorInt val backgroundColor: Int = Color.WHITE) :
+abstract class ExpandableAdapter<VH : ViewHolder>() :
     RecyclerView.Adapter<VH>() {
     companion object {
         @Suppress("MayBeConstant")

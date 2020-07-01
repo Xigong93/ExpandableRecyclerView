@@ -5,7 +5,10 @@ import android.graphics.Canvas
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * 可展开的RecycleView
@@ -43,38 +46,34 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         if (expandableAdapter.isGroup(childViewHolder.itemViewType)) {
             return super.drawChild(canvas, child, drawingTime)
         }
-        for (i in 0 until childCount) {
-            val other = getChildAt(i)
-            if (other == child) continue
-            val otherViewHolder = getChildViewHolder(other)
-            // adapterPosition小的，不能超过adapterPosition大的
-            if (childViewHolder.realPosition < otherViewHolder.realPosition) {
-                // 兄弟节点，不涉及裁剪的问题
-                if (!expandableAdapter.isGroup(otherViewHolder.itemViewType) &&
-                    expandableAdapter.getGroupPosition(childViewHolder) == expandableAdapter.getGroupPosition(
-                        otherViewHolder
-                    )
-                ) continue
-                if (child.y + child.height > other.y) {
-                    if (DEBUG) Log.d(
-                        LOG_TAG,
-                        "${childViewHolder.desc()}越过了${otherViewHolder.desc()},被裁剪"
-                    )
-                    return child.draws(canvas, drawingTime) {
-                        it.clipRect(
-                            paddingStart,
-                            other.y.toInt(),
-                            width - paddingEnd,
-                            height - paddingBottom
-                        )
-                    }
-                }
-            }
-
+        val childGroupPosition = expandableAdapter.getGroupPosition(childViewHolder)
+        // 不能越过自己的group,也不能越过上一个group
+        val groupView = findGroupViewHolder(childGroupPosition)?.itemView
+        val groupViewBottom = groupView?.let { it.y + it.height } ?: 0f
+        val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
+        val top = max(child.y, groupViewBottom)
+        val bottom = min(child.y + child.bottom, nextGroupView?.y ?: height.toFloat())
+        return child.draws(canvas, drawingTime) {
+            it.clipRect(
+                child.x,
+                top,
+                child.x + child.width,
+                bottom
+            )
         }
-        return super.drawChild(canvas, child, drawingTime)
     }
 
+    private fun findGroupViewHolder(groupPosition: Int): ViewHolder? {
+        val expandableAdapter = adapter as? ExpandableAdapter<*> ?: return null
+        for (child in children) {
+            val viewHolder = getChildViewHolder(child)
+            if (!expandableAdapter.isGroup(viewHolder.itemViewType)) continue
+            if (groupPosition == expandableAdapter.getGroupPosition(viewHolder)) {
+                return viewHolder
+            }
+        }
+        return null
+    }
 
     /**
      * 绘制到这个View下面
@@ -95,29 +94,6 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         return drawChild
     }
 
-    private val ViewHolder.realPosition: Int
-        get() {
-            val expandableAdapter = adapter as? ExpandableAdapter<*> ?: return 0
-            val groupPosition = expandableAdapter.getGroupPosition(this)
-            val childPosition = expandableAdapter.getChildPosition(this)
-            val isGroup = expandableAdapter.isGroup(itemViewType)
 
-            var position = 0
-            for (i in 0 until groupPosition) {
-                position += (1 + expandableAdapter.getChildCount(i))
-            }
-            return if (isGroup) {
-                position
-            } else {
-                position + childPosition + 1
-            }
-        }
-
-    private fun ViewHolder.desc(): String {
-        val expandableAdapter = adapter as? ExpandableAdapter<*> ?: return "null"
-        return "{group:${expandableAdapter.getGroupPosition(this)}," +
-                "child:${expandableAdapter.getChildPosition(this)}," +
-                "adapter:${adapterPosition},layout:${layoutPosition},realPosition:${realPosition}}"
-    }
 
 }
