@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<pokercc.android.expandablerecyclerview.StickyHeaderFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<pokercc.android.expandablerecyclerview.StickyHeaderRecyclerViewContainer xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -8,6 +8,6 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-</pokercc.android.expandablerecyclerview.StickyHeaderFrameLayout>
+</pokercc.android.expandablerecyclerview.StickyHeaderRecyclerViewContainer>
 
 

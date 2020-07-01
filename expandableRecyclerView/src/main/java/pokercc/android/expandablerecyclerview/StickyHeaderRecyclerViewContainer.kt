@@ -12,7 +12,7 @@ import androidx.core.view.*
 import androidx.recyclerview.widget.RecyclerView
 import java.lang.ref.WeakReference
 
-class StickyHeaderFrameLayout @JvmOverloads constructor(
+class StickyHeaderRecyclerViewContainer @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr), StickyHeaderDecoration.Callback {
 

@@ -7,6 +7,4 @@
 - 支持粘性头(Sticky Header)
 
 注意事项:
-- ItemView请设置不透明的背景，否则会发生穿透的情况
-- ExpandableAdapter会对RecyclerView设置ItemAnimator和ItemDecoration
-- ExpandableAdapter 可以设置不透明背景颜色，来防止Children Item超出 Group
+- 使用StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView请设置不透明的背景，否则会发生穿透的情况
