@@ -36,8 +36,12 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         }
     }
 
-    val expandableAdapter: ExpandableAdapter<*>?
-        get() = adapter as? ExpandableAdapter<*>
+
+    fun requireAdapter(): ExpandableAdapter<*> {
+        val expandableAdapter = adapter as? ExpandableAdapter<*>
+        require(expandableAdapter != null)
+        return expandableAdapter
+    }
 
     override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
         // 未执行动画，不需要裁减
