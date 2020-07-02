@@ -8,3 +8,4 @@
 
 注意事项:
 - 使用StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView请设置不透明的背景，否则会发生穿透的情况
+- ExpandableRecyclerView的height需要设置为match_parent,否则动画的执行有问题
