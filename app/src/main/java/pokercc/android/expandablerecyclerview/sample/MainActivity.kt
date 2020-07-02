@@ -1,10 +1,11 @@
 package pokercc.android.expandablerecyclerview.sample
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import pokercc.android.expandablerecyclerview.sample.college.CollegeActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.textbook.TextBookListActivity
+import pokercc.android.expandablerecyclerview.sample.yuanfudao.YuanfudaoActivity
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,6 +20,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.textBookListButton.setOnClickListener {
             TextBookListActivity.start(it.context)
+        }
+        binding.yuanfudaoButton.setOnClickListener {
+            YuanfudaoActivity.start(it.context)
         }
     }
 }
