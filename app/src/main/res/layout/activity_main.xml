@@ -9,10 +9,17 @@
 
 
     <Button
-        android:id="@+id/college_list_button"
+        android:id="@+id/college_long_list_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="大学列表"
+        android:text="大学列表(长列表）"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/college_short_list_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="大学列表(短列表)"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button

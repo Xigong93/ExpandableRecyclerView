@@ -24,26 +24,25 @@ import java.lang.IllegalArgumentException
  */
 class CollegeActivity : AppCompatActivity() {
     companion object {
-        fun start(context: Context) {
-            context.startActivity(Intent(context, CollegeActivity::class.java))
+        private const val SHORT_LIST = "short_list"
+        fun start(context: Context, shortList: Boolean) {
+            val intent = Intent(context, CollegeActivity::class.java)
+            intent.putExtra(SHORT_LIST, shortList)
+            context.startActivity(intent)
         }
     }
 
+    private val shortList by lazy { intent.getBooleanExtra(SHORT_LIST, false) }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = CollegeActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val viewModel: CollegeViewModel = ViewModelProvider(
-            this,
-            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        ).get()
+        val modelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        val viewModel: CollegeViewModel = ViewModelProvider(this, modelFactory).get()
         viewModel.colleges.observe(this, Observer {
-            val countryAdapter =
-                CollegeAdapter(
-                    it
-                )
-            binding.recyclerView.adapter = countryAdapter
+            val list = if (shortList) it.subList(0, 2) else it
+            binding.recyclerView.adapter = CollegeAdapter(list)
         })
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         viewModel.loadColleges()
@@ -75,23 +74,16 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup, viewType: Int
     ): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(viewGroup.context)
         return when (viewType) {
             PROVINCE_ITEM -> {
                 ProvinceVH(
-                    ProvinceItemBinding.inflate(
-                        LayoutInflater.from(viewGroup.context),
-                        viewGroup,
-                        false
-                    )
+                    ProvinceItemBinding.inflate(inflater, viewGroup, false)
                 )
             }
             CITY_ITEM -> {
                 CityVH(
-                    CityItemBinding.inflate(
-                        LayoutInflater.from(viewGroup.context),
-                        viewGroup,
-                        false
-                    )
+                    CityItemBinding.inflate(inflater, viewGroup, false)
                 )
             }
             else -> {
@@ -104,23 +96,22 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup, viewType: Int
     ): RecyclerView.ViewHolder {
-        if (viewType == FAMOUS_COLLEGE__ITEM) {
-            return FamousCollegeVH(
-                FamousCollegeItemBinding.inflate(
-                    LayoutInflater.from(viewGroup.context),
-                    viewGroup,
-                    false
+        val inflater = LayoutInflater.from(viewGroup.context)
+        return when (viewType) {
+            FAMOUS_COLLEGE__ITEM -> {
+                FamousCollegeVH(
+                    FamousCollegeItemBinding.inflate(inflater, viewGroup, false)
                 )
-            )
+            }
+            COLLEGE_ITEM -> {
+                CollegeVH(
+                    CollegeItemBinding.inflate(inflater, viewGroup, false)
+                )
+            }
+            else -> {
+                throw IllegalArgumentException("unSupport viewType:${viewType}")
+            }
         }
-        return CollegeVH(
-            CollegeItemBinding.inflate(
-                LayoutInflater.from(viewGroup.context),
-                viewGroup,
-                false
-            )
-        )
-
     }
 
     override fun getGroupItemViewType(groupPosition: Int): Int {
@@ -150,11 +141,13 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
         payloads: List<Any>
     ) {
         val children = data[groupPosition].colleges[childPosition]
-        (holder as? CollegeVH)?.apply {
-            itemBinding.titleText.text = children.name
-        }
-        (holder as? FamousCollegeVH)?.apply {
-            itemBinding.titleText.text = children.name
+        if (payloads.isEmpty()) {
+            (holder as? CollegeVH)?.apply {
+                itemBinding.titleText.text = children.name
+            }
+            (holder as? FamousCollegeVH)?.apply {
+                itemBinding.titleText.text = children.name
+            }
         }
     }
 
@@ -164,8 +157,8 @@ private class CollegeAdapter(private val data: List<CollegeZone>) :
         expand: Boolean,
         payloads: List<Any>
     ) {
+        val parent = data[groupPosition]
         if (payloads.isEmpty()) {
-            val parent = data[groupPosition]
             (holder as? ProvinceVH)?.apply {
                 itemBinding.titleText.text = parent.name
                 itemBinding.arrowImage.rotation = if (expand) 0f else -90.0f

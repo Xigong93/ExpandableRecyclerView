@@ -29,10 +29,15 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
     override fun setAdapter(adapter: Adapter<*>?) {
         if (adapter != null) {
             require(adapter is ExpandableAdapter)
-            itemAnimator = ExpandableItemAnimator(adapter)
         }
         super.setAdapter(adapter)
+        if (adapter != null) {
+            itemAnimator = ExpandableItemAnimator(this)
+        }
     }
+
+    val expandableAdapter: ExpandableAdapter<*>?
+        get() = adapter as? ExpandableAdapter<*>
 
     override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
         // 未执行动画，不需要裁减
@@ -53,6 +58,12 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
         val top = max(child.y, groupViewBottom)
         val bottom = min(child.y + child.bottom, nextGroupView?.y ?: height.toFloat())
+        if (DEBUG) {
+            Log.d(
+                LOG_TAG,
+                "childGroupPosition:${childGroupPosition},top:${top},bottom:${bottom},groupView!=null=${groupView != null},nextGroupView!=null=${nextGroupView != null}"
+            )
+        }
         return child.draws(canvas, drawingTime) {
             it.clipRect(
                 child.x,
@@ -61,18 +72,6 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
                 bottom
             )
         }
-    }
-
-    private fun findGroupViewHolder(groupPosition: Int): ViewHolder? {
-        val expandableAdapter = adapter as? ExpandableAdapter<*> ?: return null
-        for (child in children) {
-            val viewHolder = getChildViewHolder(child)
-            if (!expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            if (groupPosition == expandableAdapter.getGroupPosition(viewHolder)) {
-                return viewHolder
-            }
-        }
-        return null
     }
 
     /**
@@ -94,6 +93,18 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         return drawChild
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun findGroupViewHolder(groupPosition: Int): ViewHolder? {
+        val expandableAdapter = adapter as? ExpandableAdapter<*> ?: return null
+        for (child in children) {
+            val viewHolder = getChildViewHolder(child)
+            if (!expandableAdapter.isGroup(viewHolder.itemViewType)) continue
+            if (groupPosition == expandableAdapter.getGroupPosition(viewHolder)) {
+                return viewHolder
+            }
+        }
+        return null
+    }
 
 
 }

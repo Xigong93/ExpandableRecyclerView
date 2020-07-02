@@ -23,6 +23,7 @@ class StickyHeaderRecyclerViewContainer @JvmOverloads constructor(
     override fun onViewAdded(child: View) {
         super.onViewAdded(child)
         if (child is RecyclerView) {
+            require(child is ExpandableRecyclerView)
             child.addItemDecoration(stickyHeaderDecoration)
             child.adapter
         }
@@ -92,10 +93,10 @@ private class StickyHeaderDecoration(private val callback: Callback) :
         }
     }
 
-    override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
-        super.onDraw(c, parent, state)
-        val expandableAdapter =
-            parent.adapter as? ExpandableAdapter<RecyclerView.ViewHolder> ?: return
+    override fun onDraw(c: Canvas, p: RecyclerView, state: RecyclerView.State) {
+        super.onDraw(c, p, state)
+        val parent: ExpandableRecyclerView = p as? ExpandableRecyclerView ?: return
+        val expandableAdapter = p.adapter as? ExpandableAdapter<RecyclerView.ViewHolder> ?: return
         if (this.expandableAdapter != expandableAdapter) {
             expandableAdapter.registerAdapterDataObserver(changeObservable)
             this.expandableAdapter = expandableAdapter
@@ -140,7 +141,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
 
 
             // 计算偏移量
-            val nextGroupView = findGroupViewHolder(parent, groupPosition + 1)?.itemView
+            val nextGroupView = parent.findGroupViewHolder(groupPosition + 1)?.itemView
             var offset = 0f
             if (nextGroupView != null) {
                 offset = nextGroupView.y - headerViewHolder.itemView.height
@@ -153,7 +154,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
         }
 
         // 隐藏Header
-        val groupView = findGroupViewHolder(parent, headerGroupPosition)?.itemView
+        val groupView = parent.findGroupViewHolder(headerGroupPosition)?.itemView
         if (groupView != null && (groupView.y) > 0) {
             callback.onGroupHide()
             if (ExpandableAdapter.DEBUG) {
@@ -162,20 +163,6 @@ private class StickyHeaderDecoration(private val callback: Callback) :
         }
     }
 
-    private fun findGroupViewHolder(
-        parent: RecyclerView,
-        groupPosition: Int
-    ): RecyclerView.ViewHolder? {
-        val expandableAdapter = parent.adapter as? ExpandableAdapter<*> ?: return null
-        for (child in parent.children) {
-            val viewHolder = parent.getChildViewHolder(child)
-            if (!expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            if (groupPosition == expandableAdapter.getGroupPosition(viewHolder)) {
-                return viewHolder
-            }
-        }
-        return null
-    }
 
     interface Callback {
         fun onGroupShow(

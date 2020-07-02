@@ -11,8 +11,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.collegeListButton.setOnClickListener {
-            CollegeActivity.start(it.context)
+        binding.collegeLongListButton.setOnClickListener {
+            CollegeActivity.start(it.context, false)
+        }
+        binding.collegeShortListButton.setOnClickListener {
+            CollegeActivity.start(it.context, true)
         }
         binding.textBookListButton.setOnClickListener {
             TextBookListActivity.start(it.context)

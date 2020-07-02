@@ -18,7 +18,7 @@ import java.util.List;
 
 class ExpandableItemAnimator extends SimpleItemAnimator {
     private static final String LOG_TAG = "ExpandableItemAnimator";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = BuildConfig.DEBUG;
 
     private static TimeInterpolator sDefaultInterpolator;
 
@@ -36,9 +36,12 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
     ArrayList<RecyclerView.ViewHolder> mRemoveAnimations = new ArrayList<>();
     ArrayList<RecyclerView.ViewHolder> mChangeAnimations = new ArrayList<>();
     private final ExpandableAdapter<?> expandableAdapter;
+    private final ExpandableRecyclerView expandableRecyclerView;
 
-    public ExpandableItemAnimator(ExpandableAdapter<?>  expandableAdapter) {
-        this.expandableAdapter = expandableAdapter;
+    public ExpandableItemAnimator(ExpandableRecyclerView expandableRecyclerView) {
+        this.expandableRecyclerView = expandableRecyclerView;
+        this.expandableAdapter = expandableRecyclerView.getExpandableAdapter();
+        if (expandableAdapter == null) throw new IllegalArgumentException("adapter must not null");
         int animDuration = 250;
         setAddDuration(animDuration);
         setRemoveDuration(animDuration);
@@ -183,16 +186,49 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
 
     @Override
     public boolean animateRemove(final RecyclerView.ViewHolder holder) {
-        Log.d(LOG_TAG, "animateRemove(" + holder + ")");
-        int groupIndex = expandableAdapter.getGroupPosition(holder);
         resetAnimation(holder);
-        if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
+        holder.itemView.setAlpha(1);
+        mPendingRemovals.add(holder);
+        return true;
+    }
+
+    /**
+     * 获取这一组中最远的距离
+     *
+     * @param groupPosition
+     * @return maxTranslateY>=0
+     */
+    private int getGroupMaxTranslateY(int groupPosition) {
+        int maxTranslateY = 0;
+        final RecyclerView.ViewHolder groupViewHolder = expandableRecyclerView.findGroupViewHolder(groupPosition);
+
+        for (int i = 0; i < expandableRecyclerView.getChildCount(); i++) {
+            final View view = expandableRecyclerView.getChildAt(i);
+            final RecyclerView.ViewHolder viewHolder = expandableRecyclerView.getChildViewHolder(view);
+            if (expandableAdapter.isGroup(viewHolder.getItemViewType())) continue;
+            final int viewGroupPosition = expandableAdapter.getGroupPosition(viewHolder);
+            if (viewGroupPosition != groupPosition) continue;
+            final int targetY;
+            if (groupViewHolder != null) {
+                targetY = (int) (groupViewHolder.itemView.getY() + groupViewHolder.itemView.getHeight() - view.getHeight());
+            } else {
+                targetY = -view.getHeight();
+            }
+            maxTranslateY = Math.max(maxTranslateY, Math.abs(view.getTop() - targetY));
+        }
+        return maxTranslateY;
+    }
+
+    private void animateRemoveImpl(final RecyclerView.ViewHolder holder) {
+        final int groupPosition = expandableAdapter.getGroupPosition(holder);
+        final View view = holder.itemView;
+        final ViewPropertyAnimator animation = view.animate();
+        mRemoveAnimations.add(holder);
+        if (groupPosition == expandableAdapter.getGroupCount() - 1 && !expandableAdapter.isGroup(holder.getItemViewType())) {
             // 最后一组的执行一个展开动画，其他的不执行动画
-            final View view = holder.itemView;
             view.setTranslationY(0);
-            final ViewPropertyAnimator viewPropertyAnimator = view.animate();
-            viewPropertyAnimator
-                    .translationY(-1000)
+            final int maxTranslateY = getGroupMaxTranslateY(groupPosition);
+            animation.translationY(-maxTranslateY)
                     .setDuration(getRemoveDuration())
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
@@ -207,7 +243,8 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
 
                         @Override
                         public void onAnimationEnd(Animator animator) {
-                            viewPropertyAnimator.setListener(null);
+                            animation.setListener(null);
+                            view.setTranslationY(0);
                             dispatchRemoveFinished(holder);
                             mRemoveAnimations.remove(holder);
                             dispatchFinishedWhenDone();
@@ -215,50 +252,59 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
                         }
                     })
                     .start();
-
-            return false;
         } else {
-            resetAnimation(holder);
-            holder.itemView.setAlpha(1);
-            mPendingRemovals.add(holder);
-            return true;
+            animation.setDuration(getRemoveDuration()).alpha(1).setListener(
+                    new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                            dispatchRemoveStarting(holder);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            animation.setListener(null);
+                            view.setAlpha(1);
+                            dispatchRemoveFinished(holder);
+                            mRemoveAnimations.remove(holder);
+                            dispatchFinishedWhenDone();
+                        }
+                    }).start();
         }
-    }
 
-    private void animateRemoveImpl(final RecyclerView.ViewHolder holder) {
-        final View view = holder.itemView;
-        final ViewPropertyAnimator animation = view.animate();
-        mRemoveAnimations.add(holder);
-        animation.setDuration(getRemoveDuration()).alpha(1).setListener(
-                new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                        dispatchRemoveStarting(holder);
-                    }
 
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        animation.setListener(null);
-                        view.setAlpha(1);
-                        dispatchRemoveFinished(holder);
-                        mRemoveAnimations.remove(holder);
-                        dispatchFinishedWhenDone();
-                    }
-                }).start();
     }
 
     @Override
     public boolean animateAdd(final RecyclerView.ViewHolder holder) {
         Log.d(LOG_TAG, "animateAdd(" + holder + ")");
-        int groupIndex = expandableAdapter.getGroupPosition(holder);
+        final View view = holder.itemView;
         resetAnimation(holder);
-        if (groupIndex != RecyclerView.NO_POSITION && groupIndex == expandableAdapter.getGroupCount() - 1) {
+        mPendingAdditions.add(holder);
+        int groupPosition = expandableAdapter.getGroupPosition(holder);
+        if (groupPosition == expandableAdapter.getGroupCount() - 1 && !expandableAdapter.isGroup(holder.getItemViewType())) {
+            view.setAlpha(0);
+        } else {
+            view.setAlpha(1);
+        }
+        return true;
+
+    }
+
+    void animateAddImpl(final RecyclerView.ViewHolder holder) {
+        final View view = holder.itemView;
+        final ViewPropertyAnimator animation = view.animate();
+        mAddAnimations.add(holder);
+        view.setAlpha(1);
+        int groupPosition = expandableAdapter.getGroupPosition(holder);
+        if (groupPosition == expandableAdapter.getGroupCount() - 1 && !expandableAdapter.isGroup(holder.getItemViewType())) {
             // 最后一组的执行一个展开动画，其他的不执行动画
-            final View view = holder.itemView;
-            view.setTranslationY(-1000);
-            final ViewPropertyAnimator viewPropertyAnimator = view.animate();
-            viewPropertyAnimator
-                    .translationY(0)
+            final int maxTranslateY = getGroupMaxTranslateY(groupPosition);
+            // targetY=currentTop+translateY
+            if (DEBUG) {
+                Log.d(LOG_TAG, "groupPosition:" + groupPosition + ",maxTranslateY:" + maxTranslateY);
+            }
+            view.setTranslationY(-maxTranslateY);
+            animation.translationY(0)
                     .setDuration(getAddDuration())
                     .setListener(new AnimatorListenerAdapter() {
                         @Override
@@ -273,46 +319,37 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
 
                         @Override
                         public void onAnimationEnd(Animator animator) {
-                            viewPropertyAnimator.setListener(null);
+                            view.setTranslationY(0);
+                            animation.setListener(null);
                             dispatchAddFinished(holder);
                             mAddAnimations.remove(holder);
                             dispatchFinishedWhenDone();
                         }
                     })
                     .start();
-
-            return false;
         } else {
-//        holder.itemView.setAlpha(0);
-            mPendingAdditions.add(holder);
-            return true;
+            animation.alpha(1).setDuration(getAddDuration())
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationStart(Animator animator) {
+                            dispatchAddStarting(holder);
+                        }
+
+                        @Override
+                        public void onAnimationCancel(Animator animator) {
+                            view.setAlpha(1);
+                        }
+
+                        @Override
+                        public void onAnimationEnd(Animator animator) {
+                            animation.setListener(null);
+                            dispatchAddFinished(holder);
+                            mAddAnimations.remove(holder);
+                            dispatchFinishedWhenDone();
+                        }
+                    }).start();
         }
-    }
 
-    void animateAddImpl(final RecyclerView.ViewHolder holder) {
-        final View view = holder.itemView;
-        final ViewPropertyAnimator animation = view.animate();
-        mAddAnimations.add(holder);
-        animation.alpha(1).setDuration(getAddDuration())
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationStart(Animator animator) {
-                        dispatchAddStarting(holder);
-                    }
-
-                    @Override
-                    public void onAnimationCancel(Animator animator) {
-                        view.setAlpha(1);
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animator animator) {
-                        animation.setListener(null);
-                        dispatchAddFinished(holder);
-                        mAddAnimations.remove(holder);
-                        dispatchFinishedWhenDone();
-                    }
-                }).start();
     }
 
     @Override
@@ -520,10 +557,12 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
         endChangeAnimation(mPendingChanges, item);
         if (mPendingRemovals.remove(item)) {
             view.setAlpha(1);
+            view.setTranslationY(0);
             dispatchRemoveFinished(item);
         }
         if (mPendingAdditions.remove(item)) {
             view.setAlpha(1);
+            view.setTranslationY(0);
             dispatchAddFinished(item);
         }
 
@@ -554,6 +593,7 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
             ArrayList<RecyclerView.ViewHolder> additions = mAdditionsList.get(i);
             if (additions.remove(item)) {
                 view.setAlpha(1);
+                view.setTranslationY(0);
                 dispatchAddFinished(item);
                 if (additions.isEmpty()) {
                     mAdditionsList.remove(i);
@@ -585,7 +625,6 @@ class ExpandableItemAnimator extends SimpleItemAnimator {
             throw new IllegalStateException("after animation is cancelled, item should not be in "
                     + "mMoveAnimations list");
         }
-        view.setTranslationY(0);
         dispatchFinishedWhenDone();
     }
 
