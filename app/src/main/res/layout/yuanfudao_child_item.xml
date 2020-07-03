@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="60dp" >
 
-    <TextView
+    <pokercc.android.expandablerecyclerview.sample.HeavyTextView
         android:id="@+id/title_text"
         android:layout_gravity="center_vertical"
         android:layout_width="wrap_content"

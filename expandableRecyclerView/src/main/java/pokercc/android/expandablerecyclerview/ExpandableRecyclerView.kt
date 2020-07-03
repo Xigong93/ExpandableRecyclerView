@@ -65,7 +65,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         if (DEBUG) {
             Log.d(
                 LOG_TAG,
-                "childGroupPosition:${childGroupPosition},top:${top},bottom:${bottom},groupView!=null=${groupView != null},nextGroupView!=null=${nextGroupView != null}"
+                "group:${childGroupPosition},child:${expandableAdapter.getChildPosition(childViewHolder)},top:${top},bottom:${bottom}"
             )
         }
         return child.draws(canvas, drawingTime) {

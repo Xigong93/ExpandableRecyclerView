@@ -35,7 +35,9 @@ class YuanfudaoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = YudanfudaoAdapter()
+        binding.recyclerView.postDelayed({
+            binding.recyclerView.adapter = YudanfudaoAdapter()
+        },100)
     }
 
 }

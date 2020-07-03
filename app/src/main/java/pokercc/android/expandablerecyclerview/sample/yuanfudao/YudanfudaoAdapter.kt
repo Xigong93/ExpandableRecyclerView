@@ -67,13 +67,6 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         expand: Boolean
     ) {
         val viewHolder = holder as? GroupViewHolder ?: return
-
-        val titleText = viewHolder.binding.titleText
-        titleText.rotation = 0f
-        titleText.animate()
-            .rotation(360f)
-            .setDuration(animDuration)
-            .start()
     }
 
     override fun getGroupCount(): Int = 2
