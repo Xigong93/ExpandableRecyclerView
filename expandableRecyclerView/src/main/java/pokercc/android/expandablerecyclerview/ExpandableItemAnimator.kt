@@ -233,7 +233,9 @@ class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyc
                 holder.itemViewType
             )
         ) {
-            view.alpha = 0f
+            val maxTranslateY = getGroupMaxTranslateY(groupPosition)
+            view.translationY = -maxTranslateY.toFloat()
+            view.alpha = 1f
         } else {
             view.alpha = 1f
         }

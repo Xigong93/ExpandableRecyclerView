@@ -3,11 +3,14 @@ package pokercc.android.expandablerecyclerview.sample.yuanfudao
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import android.view.View
 import androidx.core.view.get
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.ExpandableRecyclerView
+import pokercc.android.expandablerecyclerview.sample.BuildConfig
 import pokercc.android.expandablerecyclerview.sample.dpToPx
 
 private const val LOG_TAG = "YuanfudaoItemDecorator"
@@ -29,10 +32,14 @@ internal class YuanfudaoItemDecorator : RecyclerView.ItemDecoration() {
 
     override fun onDrawOver(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
         super.onDrawOver(c, parent, state)
+        if (BuildConfig.DEBUG) {
+            Log.d(LOG_TAG, "state:${state}")
+        }
         val expandableAdapter = (parent as? ExpandableRecyclerView)?.requireAdapter() ?: return
         for (i in 0 until parent.childCount) {
             val view = parent[i]
-            parent.clipAndDrawChild(c,view) {
+//            if (!view.isVisible || view.alpha == 0f) continue// 这个判断挺重要的不然会闪烁
+            parent.clipAndDrawChild(c, view) {
                 drawDecorator(parent, view, expandableAdapter, c)
             }
         }
