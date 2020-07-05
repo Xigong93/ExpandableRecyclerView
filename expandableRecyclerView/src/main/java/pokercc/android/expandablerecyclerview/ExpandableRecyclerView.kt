@@ -7,8 +7,6 @@ import android.util.Log
 import android.view.View
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * 可展开的RecycleView
@@ -28,9 +26,9 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
 
     override fun draw(c: Canvas) {
         super.draw(c)
-        // 解决硬件加速，在展开动画的过程中，动画bug
-        if (isAnimating) {
-            invalidate()
+        // 修复动画不更新的bug
+        if (itemDecorationCount == 0 && isAnimating) {
+            postInvalidateOnAnimation()
         }
     }
 
@@ -52,57 +50,46 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
     }
 
     override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
-        // 未执行动画，不需要裁减
-        if (!isAnimating) {
-            return super.drawChild(canvas, child, drawingTime)
-        }
-        val expandableAdapter = adapter as? ExpandableAdapter<*>
-            ?: return super.drawChild(canvas, child, drawingTime)
-        val childViewHolder = getChildViewHolder(child)
-        // 不裁减GroupViewHolder
-        if (expandableAdapter.isGroup(childViewHolder.itemViewType)) {
-            return super.drawChild(canvas, child, drawingTime)
-        }
-        val childGroupPosition = expandableAdapter.getGroupPosition(childViewHolder)
-        // 不能越过自己的group,也不能越过上一个group
-        val groupView = findGroupViewHolder(childGroupPosition)?.itemView
-        val groupViewBottom = groupView?.let { it.y + it.height } ?: 0f
-        val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
-        val top = max(child.y, groupViewBottom)
-        val bottom = min(child.y + child.bottom, nextGroupView?.y ?: height.toFloat())
-        if (DEBUG) {
-            Log.d(
-                LOG_TAG,
-                "group:${childGroupPosition},child:${expandableAdapter.getChildPosition(childViewHolder)},top:${top},bottom:${bottom}"
-            )
-        }
-        return child.draws(canvas, drawingTime) {
-            it.clipRect(
-                child.x,
-                top,
-                child.x + child.width,
-                bottom
-            )
+        return clipAndDrawChild(canvas, child) {
+            super.drawChild(canvas, child, drawingTime)
         }
     }
 
     /**
-     * 绘制到这个View下面
+     * 裁剪和绘制
      */
-    private fun View.draws(
-        canvas: Canvas,
-        drawingTime: Long,
-        canvasCallback: (Canvas) -> Unit
-    ): Boolean {
+    fun <T> clipAndDrawChild(canvas: Canvas, child: View, drawAction: (Canvas) -> T): T {
+        val childViewHolder = getChildViewHolder(child)
+        // 不裁减GroupViewHolder
+        if (!isAnimating || requireAdapter().isGroup(childViewHolder.itemViewType)) {
+            return drawAction(canvas)
+        }
+        val childGroupPosition = requireAdapter().getGroupPosition(childViewHolder)
+        // 不能越过自己的group,也不能越过上一个group
+        val groupView = findGroupViewHolder(childGroupPosition)?.itemView
+        val groupViewBottom = groupView?.let { it.y + it.height } ?: 0f
+        val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
+        val bottom = nextGroupView?.y ?: height.toFloat()
+        if (DEBUG) {
+            val childPosition = requireAdapter().getChildPosition(childViewHolder)
+            Log.d(
+                LOG_TAG,
+                "group:${childGroupPosition},child:$childPosition,top:$groupViewBottom,bottom:${bottom}"
+            )
+        }
+        // 裁剪
         val saveCount = canvas.save()
-        val drawChild: Boolean
         try {
-            canvasCallback(canvas)
-            drawChild = super.drawChild(canvas, this, drawingTime)
+            canvas.clipRect(
+                child.x,
+                groupViewBottom,
+                child.x + child.width,
+                bottom
+            )
+            return drawAction(canvas)
         } finally {
             canvas.restoreToCount(saveCount)
         }
-        return drawChild
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
