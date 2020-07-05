@@ -26,6 +26,14 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         val DEBUG = BuildConfig.DEBUG
     }
 
+    override fun draw(c: Canvas) {
+        super.draw(c)
+        // 解决硬件加速，在展开动画的过程中，动画bug
+        if (isAnimating) {
+            invalidate()
+        }
+    }
+
     override fun setAdapter(adapter: Adapter<*>?) {
         if (adapter != null) {
             require(adapter is ExpandableAdapter)
