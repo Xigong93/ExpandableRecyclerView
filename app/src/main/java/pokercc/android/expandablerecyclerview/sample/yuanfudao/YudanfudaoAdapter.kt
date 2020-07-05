@@ -7,10 +7,10 @@ import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.sample.databinding.YuanfudaoChildItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.YuanfudaoGroupItemBinding
 
-private class GroupViewHolder(val binding: YuanfudaoGroupItemBinding) :
+internal class YuanfudaoGroupViewHolder(val binding: YuanfudaoGroupItemBinding) :
     RecyclerView.ViewHolder(binding.root)
 
-private class ChildViewHolder(val binding: YuanfudaoChildItemBinding) :
+internal class YuanfudaoChildViewHolder(val binding: YuanfudaoChildItemBinding) :
     RecyclerView.ViewHolder(binding.root)
 
 internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
@@ -22,7 +22,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         val binding = YuanfudaoGroupItemBinding.inflate(
             inflater, viewGroup, false
         )
-        return GroupViewHolder(binding)
+        return YuanfudaoGroupViewHolder(binding)
     }
 
     override fun onCreateChildViewHolder(
@@ -33,7 +33,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         val binding = YuanfudaoChildItemBinding.inflate(
             inflater, viewGroup, false
         )
-        return ChildViewHolder(binding)
+        return YuanfudaoChildViewHolder(binding)
     }
 
     override fun onBindChildViewHolder(
@@ -42,7 +42,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         childPosition: Int,
         payloads: List<Any>
     ) {
-        val viewHolder = holder as? ChildViewHolder ?: return
+        val viewHolder = holder as? YuanfudaoChildViewHolder ?: return
         if (payloads.isEmpty()) {
             viewHolder.binding.titleText.text = "child ${childPosition + 1}"
         }
@@ -54,7 +54,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         expand: Boolean,
         payloads: List<Any>
     ) {
-        val viewHolder = holder as? GroupViewHolder ?: return
+        val viewHolder = holder as? YuanfudaoGroupViewHolder ?: return
         if (payloads.isEmpty()) {
             viewHolder.binding.titleText.text = "Group ${groupPosition + 1}"
         }
@@ -66,7 +66,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         animDuration: Long,
         expand: Boolean
     ) {
-        val viewHolder = holder as? GroupViewHolder ?: return
+        val viewHolder = holder as? YuanfudaoGroupViewHolder ?: return
     }
 
     override fun getGroupCount(): Int = 2
