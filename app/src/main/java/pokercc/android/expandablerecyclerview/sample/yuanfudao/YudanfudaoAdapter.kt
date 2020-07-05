@@ -45,6 +45,9 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         val viewHolder = holder as? YuanfudaoChildViewHolder ?: return
         if (payloads.isEmpty()) {
             viewHolder.binding.titleText.text = "child ${childPosition + 1}"
+            viewHolder.binding.indicatorView.setAlignView(viewHolder.binding.titleText)
+            viewHolder.binding.indicatorView.isLast =
+                childPosition == getChildCount(groupPosition) - 1
         }
     }
 
@@ -57,6 +60,8 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         val viewHolder = holder as? YuanfudaoGroupViewHolder ?: return
         if (payloads.isEmpty()) {
             viewHolder.binding.titleText.text = "Group ${groupPosition + 1}"
+            viewHolder.binding.indicatorView.setAlignView(viewHolder.binding.titleText)
+            viewHolder.binding.indicatorView.setExpand(expand, false)
         }
     }
 
@@ -67,6 +72,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
         expand: Boolean
     ) {
         val viewHolder = holder as? YuanfudaoGroupViewHolder ?: return
+        viewHolder.binding.indicatorView.setExpand(expand, true)
     }
 
     override fun getGroupCount(): Int = 2

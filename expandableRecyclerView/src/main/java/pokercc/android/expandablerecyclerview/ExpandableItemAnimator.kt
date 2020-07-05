@@ -11,7 +11,10 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import java.util.*
 import kotlin.math.abs
 
-class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyclerView) :
+open class ExpandableItemAnimator(
+    private val expandableRecyclerView: ExpandableRecyclerView,
+    animDuration: Long = 250L
+) :
     SimpleItemAnimator() {
     companion object {
         private const val LOG_TAG = "ExpandableItemAnimator"
@@ -33,11 +36,10 @@ class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyc
     private val expandableAdapter: ExpandableAdapter<*> = expandableRecyclerView.requireAdapter()
 
     init {
-        val animDuration = 250
-        addDuration = animDuration.toLong()
-        removeDuration = animDuration.toLong()
-        moveDuration = animDuration.toLong()
-        changeDuration = animDuration.toLong()
+        addDuration = animDuration
+        removeDuration = animDuration
+        moveDuration = animDuration
+        changeDuration = animDuration
     }
 
     data class MoveInfo(
@@ -173,7 +175,8 @@ class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyc
         return maxTranslateY
     }
 
-    private fun animateRemoveImpl(holder: ViewHolder) {
+    @Suppress("MemberVisibilityCanBePrivate")
+    open fun animateRemoveImpl(holder: ViewHolder) {
         val groupPosition = expandableAdapter.getGroupPosition(holder)
         val view = holder.itemView
         val animation = view.animate()
@@ -243,7 +246,7 @@ class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyc
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    fun animateAddImpl(holder: ViewHolder) {
+    open fun animateAddImpl(holder: ViewHolder) {
         val view = holder.itemView
         val animation = view.animate()
         mAddAnimations.add(holder)
@@ -328,7 +331,7 @@ class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyc
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    fun animateMoveImpl(holder: ViewHolder, fromX: Int, fromY: Int, toX: Int, toY: Int) {
+    open fun animateMoveImpl(holder: ViewHolder, fromX: Int, fromY: Int, toX: Int, toY: Int) {
         val view = holder.itemView
         val deltaX = toX - fromX
         val deltaY = toY - fromY
@@ -400,7 +403,8 @@ class ExpandableItemAnimator(private val expandableRecyclerView: ExpandableRecyc
         return true
     }
 
-    private fun animateChangeImpl(changeInfo: ChangeInfo) {
+    @Suppress("MemberVisibilityCanBePrivate")
+    open fun animateChangeImpl(changeInfo: ChangeInfo) {
         val holder = changeInfo.oldHolder
         val view = holder?.itemView
         val newHolder = changeInfo.newHolder

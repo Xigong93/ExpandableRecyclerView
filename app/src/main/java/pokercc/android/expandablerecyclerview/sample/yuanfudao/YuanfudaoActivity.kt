@@ -29,8 +29,9 @@ class YuanfudaoActivity : AppCompatActivity() {
         setContentView(binding.root)
         val rv = binding.recyclerView
         rv.layoutManager = LinearLayoutManager(this)
-        rv.addItemDecoration(YuanfudaoItemDecorator())
+//        rv.addItemDecoration(YuanfudaoItemDecorator())
         rv.adapter = YudanfudaoAdapter()
+        rv.itemAnimator = YuanfudaoItemAnimator(rv)
     }
 
 }
