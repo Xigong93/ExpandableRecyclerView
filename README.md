@@ -9,7 +9,7 @@
 TodoFeatures:
 - 支持展开和关闭全部
 - 更好的处理动画过程中的分割线
-
+- 展开的状态保存和恢复
 
 注意事项:
 - 使用StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView请设置不透明的背景，否则会发生穿透的情况
