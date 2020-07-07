@@ -2,10 +2,14 @@ package pokercc.android.expandablerecyclerview
 
 import android.content.Context
 import android.graphics.Canvas
+import android.os.Parcel
+import android.os.Parcelable
+import android.os.Parcelable.ClassLoaderCreator
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
 import androidx.core.view.children
+import androidx.customview.view.AbsSavedState
 import androidx.recyclerview.widget.RecyclerView
 
 /**
@@ -44,9 +48,11 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
 
 
     fun requireAdapter(): ExpandableAdapter<*> {
-        val expandableAdapter = adapter as? ExpandableAdapter<*>
-        require(expandableAdapter != null)
-        return expandableAdapter
+        return requireNotNull(getExpandableAdapter())
+    }
+
+    fun getExpandableAdapter(): ExpandableAdapter<*>? {
+        return adapter as? ExpandableAdapter<*>
     }
 
     override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
@@ -103,6 +109,63 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             }
         }
         return null
+    }
+
+    override fun onSaveInstanceState(): Parcelable {
+        val state = SavedState(super.onSaveInstanceState()!!)
+        state.expandState = getExpandableAdapter()?.onSaveInstanceState()
+        return state
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        if (state !is SavedState) {
+            super.onRestoreInstanceState(state)
+            return
+        }
+        super.onRestoreInstanceState(state.superState)
+        getExpandableAdapter()?.onRestoreInstanceState(state.expandState)
+    }
+
+    class SavedState : AbsSavedState {
+        var expandState: Parcelable? = null
+
+        /**
+         * called by CREATOR
+         */
+        internal constructor(`in`: Parcel, loader: ClassLoader?) : super(`in`, loader) {
+            expandState = `in`.readParcelable(
+                loader ?: ExpandableAdapter::class.java.classLoader
+            )
+        }
+
+        /**
+         * Called by onSaveInstanceState
+         */
+        internal constructor(superState: Parcelable) : super(superState) {}
+
+        override fun writeToParcel(dest: Parcel, flags: Int) {
+            super.writeToParcel(dest, flags)
+            dest.writeParcelable(expandState, 0)
+        }
+
+        companion object {
+            val CREATOR: Parcelable.Creator<SavedState> = object : ClassLoaderCreator<SavedState> {
+                override fun createFromParcel(
+                    `in`: Parcel,
+                    loader: ClassLoader
+                ): SavedState {
+                    return SavedState(`in`, loader)
+                }
+
+                override fun createFromParcel(`in`: Parcel): SavedState {
+                    return SavedState(`in`, null)
+                }
+
+                override fun newArray(size: Int): Array<SavedState?> {
+                    return arrayOfNulls<SavedState>(size)
+                }
+            }
+        }
     }
 
 

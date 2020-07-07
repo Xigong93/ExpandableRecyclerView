@@ -1,10 +1,11 @@
 package pokercc.android.expandablerecyclerview
 
-import android.graphics.Color
 import android.os.Looper
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.SparseBooleanArray
 import android.view.ViewGroup
-import androidx.annotation.ColorInt
+import androidx.core.util.putAll
 import androidx.core.util.set
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
@@ -334,6 +335,16 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         }
     }
 
+    fun onSaveInstanceState(): Parcelable {
+        return ExpandableState(expandState)
+    }
+
+    fun onRestoreInstanceState(state: Parcelable?) {
+        (state as? ExpandableState)?.expandState?.let {
+            expandState.clear()
+            expandState.putAll(it)
+        }
+    }
 
     final override fun getItemCount(): Int {
         return items.size
@@ -396,4 +407,33 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         viewHolder.itemView.getTag(CHILD_INDEX_FLAG)?.let { it as? Int }
             ?: RecyclerView.NO_POSITION
 
+    class ExpandableState() : Parcelable {
+        var expandState: SparseBooleanArray? = null
+
+        constructor(sparseBooleanArray: SparseBooleanArray) : this() {
+            this.expandState = sparseBooleanArray
+        }
+
+        constructor(parcel: Parcel) : this() {
+            this.expandState = parcel.readSparseBooleanArray()
+        }
+
+        override fun writeToParcel(parcel: Parcel, flags: Int) {
+            parcel.writeSparseBooleanArray(expandState)
+        }
+
+        override fun describeContents(): Int {
+            return 0
+        }
+
+        companion object CREATOR : Parcelable.Creator<ExpandableState> {
+            override fun createFromParcel(parcel: Parcel): ExpandableState {
+                return ExpandableState(parcel)
+            }
+
+            override fun newArray(size: Int): Array<ExpandableState?> {
+                return arrayOfNulls(size)
+            }
+        }
+    }
 }
