@@ -50,15 +50,26 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     var enableAnimation = true
 
     private var recyclerView: RecyclerView? = null
+    private val dataObserver = object : RecyclerView.AdapterDataObserver() {
+        override fun onChanged() {
+            super.onChanged()
+//            expandState.clear()
+        }
+
+    }
+
+
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         require(recyclerView is ExpandableRecyclerView)
+        registerAdapterDataObserver(dataObserver)
         this.recyclerView = recyclerView
         setDataInternal()
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
+        unregisterAdapterDataObserver(dataObserver)
         this.recyclerView = null
     }
 
@@ -408,24 +419,15 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         viewHolder.itemView.getTag(CHILD_INDEX_FLAG)?.let { it as? Int }
             ?: RecyclerView.NO_POSITION
 
-    class ExpandableState() : Parcelable {
-        var expandState: SparseBooleanArray? = null
+    class ExpandableState(var expandState: SparseBooleanArray?) : Parcelable {
 
-        constructor(sparseBooleanArray: SparseBooleanArray) : this() {
-            this.expandState = sparseBooleanArray
-        }
-
-        constructor(parcel: Parcel) : this() {
-            this.expandState = parcel.readSparseBooleanArray()
-        }
+        constructor(parcel: Parcel) : this(parcel.readSparseBooleanArray())
 
         override fun writeToParcel(parcel: Parcel, flags: Int) {
             parcel.writeSparseBooleanArray(expandState)
         }
 
-        override fun describeContents(): Int {
-            return 0
-        }
+        override fun describeContents(): Int = 0
 
         companion object CREATOR : Parcelable.Creator<ExpandableState> {
             override fun createFromParcel(parcel: Parcel): ExpandableState {

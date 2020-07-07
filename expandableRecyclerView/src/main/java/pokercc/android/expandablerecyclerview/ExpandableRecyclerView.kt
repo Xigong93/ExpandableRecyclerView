@@ -148,24 +148,23 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             dest.writeParcelable(expandState, 0)
         }
 
-        companion object {
-            val CREATOR: Parcelable.Creator<SavedState> = object : ClassLoaderCreator<SavedState> {
-                override fun createFromParcel(
-                    `in`: Parcel,
-                    loader: ClassLoader
-                ): SavedState {
-                    return SavedState(`in`, loader)
-                }
+        companion object CREATOR : ClassLoaderCreator<SavedState> {
+            override fun createFromParcel(
+                `in`: Parcel,
+                loader: ClassLoader
+            ): SavedState {
+                return SavedState(`in`, loader)
+            }
 
-                override fun createFromParcel(`in`: Parcel): SavedState {
-                    return SavedState(`in`, null)
-                }
+            override fun createFromParcel(`in`: Parcel): SavedState {
+                return SavedState(`in`, null)
+            }
 
-                override fun newArray(size: Int): Array<SavedState?> {
-                    return arrayOfNulls<SavedState>(size)
-                }
+            override fun newArray(size: Int): Array<SavedState?> {
+                return arrayOfNulls(size)
             }
         }
+
     }
 
 
