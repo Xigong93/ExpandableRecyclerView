@@ -115,36 +115,6 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         expand: Boolean
     ) = Unit
 
-    /**
-     * 通知group布局刷新
-     *
-     * @param groupPosition
-     * @param payload
-     */
-    @Suppress("MemberVisibilityCanBePrivate")
-    fun notifyGroupChange(groupPosition: Int, payload: Any? = null) {
-        notifyItemChanged(getGroupAdapterPosition(groupPosition), payload)
-    }
-
-    /**
-     * 通知子item局部刷新
-     *
-     * @param groupPosition
-     * @param childPosition
-     * @param payload
-     */
-    fun notifyChildChange(
-        groupPosition: Int,
-        childPosition: Int,
-        payload: Any? = null
-    ) {
-        if (isExpand(groupPosition)) {
-            notifyItemChanged(
-                getChildAdapterPosition(groupPosition, childPosition),
-                payload
-            )
-        }
-    }
 
     /**
      * 展开一个group
@@ -355,6 +325,106 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
             expandState.clear()
             expandState.putAll(it)
             setDataInternal()
+        }
+    }
+
+
+    /**
+     * 通知group布局刷新
+     *
+     * @param groupPosition
+     * @param payload
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun notifyGroupChange(groupPosition: Int, payload: Any? = null) {
+        notifyItemChanged(getGroupAdapterPosition(groupPosition), payload)
+    }
+
+    /**
+     * 通知子item局部刷新
+     *
+     * @param groupPosition
+     * @param childPosition
+     * @param payload
+     */
+    fun notifyChildChange(
+        groupPosition: Int,
+        childPosition: Int,
+        payload: Any? = null
+    ) {
+        if (isExpand(groupPosition)) {
+            notifyItemChanged(
+                getChildAdapterPosition(groupPosition, childPosition),
+                payload
+            )
+        }
+    }
+
+    fun notifyGroupInserted(groupPosition: Int) {
+        notifyItemInserted(getGroupAdapterPosition(groupPosition))
+    }
+
+    fun notifyGroupRangeInserted(range: IntRange) {
+        notifyItemRangeInserted(
+            getGroupAdapterPosition(range.first),
+            range.last - range.first
+        )
+    }
+
+    fun notifyGroupRemove(groupPosition: Int) {
+        notifyItemRemoved(getGroupAdapterPosition(groupPosition))
+    }
+
+    fun notifyGroupRangeRemove(range: IntRange) {
+        notifyItemRangeRemoved(
+            getGroupAdapterPosition(range.first),
+            range.last - range.first
+        )
+    }
+
+    fun notifyChildInserted(groupPosition: Int, childPosition: Int) {
+        if (isExpand(groupPosition)) {
+            notifyItemInserted(getChildAdapterPosition(groupPosition, childPosition))
+        }
+    }
+
+    fun notifyChildRangeInserted(groupPosition: Int, range: IntRange) {
+        if (isExpand(groupPosition)) {
+            notifyItemRangeInserted(
+                getChildAdapterPosition(groupPosition, range.first),
+                range.last - range.first
+            )
+        }
+    }
+
+    fun notifyGroupMove(fromGroupPosition: Int, toGroupPosition: Int) {
+        notifyItemMoved(
+            getGroupAdapterPosition(fromGroupPosition),
+            getGroupAdapterPosition(toGroupPosition)
+        )
+    }
+
+    fun notifyChildMove(groupPosition: Int, fromChildPosition: Int, toChildPosition: Int) {
+        if (isExpand(groupPosition)) {
+            notifyItemMoved(
+                getChildAdapterPosition(groupPosition, fromChildPosition),
+                getChildAdapterPosition(groupPosition, toChildPosition)
+            )
+        }
+    }
+
+    fun notifyChildRemove(groupPosition: Int, childPosition: Int) {
+        if (isExpand(groupPosition)) {
+            notifyItemRemoved(getChildAdapterPosition(groupPosition, childPosition))
+        }
+    }
+
+    fun notifyChildRangeRemove(groupPosition: Int, range: IntRange) {
+        if (isExpand(groupPosition)) {
+            notifyItemRangeRemoved(
+                getChildAdapterPosition(groupPosition, range.first),
+                range.last - range.first
+            )
         }
     }
 
