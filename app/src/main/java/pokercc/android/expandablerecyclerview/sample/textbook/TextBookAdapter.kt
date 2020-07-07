@@ -78,7 +78,7 @@ private class TypeViewHolder(val binding: TextBookTypeBinding) :
 private class GradeViewHolder(val binding: TextBookGradeBinding) :
     RecyclerView.ViewHolder(binding.root)
 
-internal class TextBookAdapter(private val items: List<TestBookList>) :
+internal class TextBookAdapter(private val items: List<TextBookList>) :
     ExpandableAdapter<RecyclerView.ViewHolder>() {
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,

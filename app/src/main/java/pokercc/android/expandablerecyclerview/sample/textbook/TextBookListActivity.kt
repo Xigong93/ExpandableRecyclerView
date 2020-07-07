@@ -1,26 +1,14 @@
 package pokercc.android.expandablerecyclerview.sample.textbook
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityTextBookListBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.TextBookGradeBinding
-import pokercc.android.expandablerecyclerview.sample.databinding.TextBookTypeBinding
-import pokercc.android.expandablerecyclerview.sample.dpToPx
-import kotlin.math.ceil
 
 /**
  * 教材列表页面
@@ -42,19 +30,25 @@ class TextBookListActivity : AppCompatActivity() {
         setContentView(binding.root)
         val viewModelProvider = ViewModelProvider(
             this,
-            ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+            SavedStateViewModelFactory(application, this)
         )
         val spanCount = 3
         val gridLayoutManager = GridLayoutManager(this, spanCount)
         binding.recyclerView.layoutManager = gridLayoutManager
         binding.recyclerView.addItemDecoration(TextBookDecorator(spanCount))
         viewModel = viewModelProvider.get(TextBookListViewModel::class.java)
-        viewModel.loadData()
         viewModel.textBookLists.observe(this, Observer {
             val textBookAdapter = TextBookAdapter(it)
             binding.recyclerView.adapter = textBookAdapter
             gridLayoutManager.spanSizeLookup = TextBookSpanLookup(spanCount, textBookAdapter)
         })
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.textBookLists.value?.isNotEmpty() != true) {
+            viewModel.loadData()
+        }
     }
 
 }

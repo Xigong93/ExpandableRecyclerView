@@ -343,6 +343,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         (state as? ExpandableState)?.expandState?.let {
             expandState.clear()
             expandState.putAll(it)
+            setDataInternal()
         }
     }
 
