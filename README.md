@@ -6,9 +6,10 @@
 - 支持多类型item
 - 支持粘性头(Sticky Header)
 - 展开的状态保存和恢复
-
-TodoFeatures:
 - 支持展开和关闭全部
+
+
+
 
 注意事项:
 - 使用StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView请设置不透明的背景，否则会发生穿透的情况

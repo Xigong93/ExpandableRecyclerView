@@ -5,6 +5,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseBooleanArray
 import android.view.ViewGroup
+import androidx.annotation.UiThread
 import androidx.core.util.putAll
 import androidx.core.util.set
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,7 @@ import java.util.*
  * @author pokercc
  * @date 2019-6-2 11:38:13
  * */
+@UiThread
 abstract class ExpandableAdapter<VH : ViewHolder>() :
     RecyclerView.Adapter<VH>() {
     companion object {
@@ -50,26 +52,16 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     var enableAnimation = true
 
     private var recyclerView: RecyclerView? = null
-    private val dataObserver = object : RecyclerView.AdapterDataObserver() {
-        override fun onChanged() {
-            super.onChanged()
-//            expandState.clear()
-        }
-
-    }
-
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         require(recyclerView is ExpandableRecyclerView)
-        registerAdapterDataObserver(dataObserver)
         this.recyclerView = recyclerView
         setDataInternal()
     }
 
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
-        unregisterAdapterDataObserver(dataObserver)
         this.recyclerView = null
     }
 
@@ -115,6 +107,28 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         expand: Boolean
     ) = Unit
 
+    /**
+     * 展开全部的group
+     */
+    fun expandAllGroup() {
+        onlyOneGroupExpand = false
+        for (i in 0 until getGroupCount()) {
+            expandState[i] = true
+        }
+        setDataInternal()
+        notifyDataSetChanged()
+    }
+
+    /**
+     * 折叠全部的group
+     */
+    fun collapseAllGroup() {
+        for (i in 0 until getGroupCount()) {
+            expandState[i] = false
+        }
+        setDataInternal()
+        notifyDataSetChanged()
+    }
 
     /**
      * 展开一个group
@@ -283,12 +297,6 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         payloads: List<Any>
     ) {
         val expand = isExpand(realItem.groupPosition)
-        onBindGroupViewHolder(
-            holder,
-            realItem.groupPosition,
-            expand,
-            payloads
-        )
         if (payloads.isEmpty()) {
             holder.itemView.setOnClickListener {
                 if (isExpand(realItem.groupPosition)) {
@@ -298,6 +306,12 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
                 }
             }
         }
+        onBindGroupViewHolder(
+            holder,
+            realItem.groupPosition,
+            expand,
+            payloads
+        )
         for (payload in payloads) {
             if (GROUP_EXPAND_CHANGE === payload) {
                 val itemAnimator = recyclerView?.itemAnimator
@@ -426,6 +440,13 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
                 range.last - range.first
             )
         }
+    }
+
+    /**
+     * 清空展开状态，配合notifyDataSetChange使用
+     */
+    fun clearExpandState() {
+        expandState.clear()
     }
 
     final override fun getItemCount(): Int {

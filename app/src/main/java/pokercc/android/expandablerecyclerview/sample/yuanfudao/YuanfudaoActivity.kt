@@ -30,7 +30,10 @@ class YuanfudaoActivity : AppCompatActivity() {
         val rv = binding.recyclerView
         rv.layoutManager = LinearLayoutManager(this)
 //        rv.addItemDecoration(YuanfudaoItemDecorator())
-        rv.adapter = YudanfudaoAdapter()
+        rv.adapter = YudanfudaoAdapter().apply {
+            expandAllGroup()
+            collapseAllGroup()
+        }
         rv.itemAnimator = YuanfudaoItemAnimator(rv)
     }
 
