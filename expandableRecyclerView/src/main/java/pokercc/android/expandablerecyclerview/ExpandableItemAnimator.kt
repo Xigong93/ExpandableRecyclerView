@@ -10,10 +10,11 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import androidx.recyclerview.widget.SimpleItemAnimator
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.max
 
 open class ExpandableItemAnimator(
     private val expandableRecyclerView: ExpandableRecyclerView,
-    animDuration: Long = 250L
+    animDuration: Long = 300L
 ) :
     SimpleItemAnimator() {
     companion object {
@@ -151,6 +152,22 @@ open class ExpandableItemAnimator(
     }
 
     /**
+     * 这个组接触到了RecyclerView的底部
+     */
+    private fun groupReachRecyclerViewBottom(groupPosition: Int): Boolean {
+        var maxChildBottom = 0f
+        for (i in 0 until expandableRecyclerView.childCount) {
+            val view = expandableRecyclerView.getChildAt(i)
+            val viewHolder = expandableRecyclerView.getChildViewHolder(view)
+            if (expandableAdapter.isGroup(viewHolder.itemViewType)) continue
+            val viewGroupPosition = expandableAdapter.getGroupPosition(viewHolder)
+            if (viewGroupPosition != groupPosition) continue
+            maxChildBottom = max(maxChildBottom, view.y + view.height)
+        }
+        return maxChildBottom >= expandableRecyclerView.bottom - expandableRecyclerView.paddingBottom
+    }
+
+    /**
      * 获取这一组中最远的距离
      *
      * @param groupPosition
@@ -183,6 +200,7 @@ open class ExpandableItemAnimator(
         mRemoveAnimations.add(holder)
         if (groupPosition == expandableAdapter.getGroupCount() - 1
             && !expandableAdapter.isGroup(holder.itemViewType)
+            && !groupReachRecyclerViewBottom(groupPosition)
         ) {
             // 最后一组的执行一个展开动画，其他的不执行动画
             view.translationY = 0f
