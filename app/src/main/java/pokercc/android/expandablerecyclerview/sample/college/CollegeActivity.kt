@@ -1,21 +1,15 @@
 package pokercc.android.expandablerecyclerview.sample.college
 
-import android.animation.ObjectAnimator
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.SavedStateViewModelFactory
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.get
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import pokercc.android.expandablerecyclerview.ExpandableAdapter
-import pokercc.android.expandablerecyclerview.sample.databinding.*
-import java.lang.IllegalArgumentException
+import pokercc.android.expandablerecyclerview.sample.databinding.CollegeActivityBinding
 
 /**
  * 大学列表页面
@@ -33,19 +27,26 @@ class CollegeActivity : AppCompatActivity() {
     }
 
     private val shortList by lazy { intent.getBooleanExtra(SHORT_LIST, false) }
+    private lateinit var viewModel: CollegeViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = CollegeActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val modelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        val viewModel: CollegeViewModel = ViewModelProvider(this, modelFactory).get()
+        val modelFactory = SavedStateViewModelFactory(application, this)
+        viewModel = ViewModelProvider(this, modelFactory).get()
         viewModel.colleges.observe(this, Observer {
             val list = if (shortList) it.subList(0, 2) else it
             binding.recyclerView.adapter = CollegeAdapter(shortList, list)
         })
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        viewModel.loadColleges()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.colleges.value.isNullOrEmpty()) {
+            viewModel.loadColleges()
+        }
     }
 }
 

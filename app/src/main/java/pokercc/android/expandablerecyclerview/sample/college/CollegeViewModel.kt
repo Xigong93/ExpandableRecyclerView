@@ -1,9 +1,9 @@
-
 package pokercc.android.expandablerecyclerview.sample.college
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.SavedStateHandle
 import com.squareup.moshi.Moshi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -11,13 +11,25 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import pokercc.android.expandablerecyclerview.sample.R
 
-class CollegeViewModel(application: Application) : AndroidViewModel(application) {
+class CollegeViewModel(application: Application, private val stateHandle: SavedStateHandle) :
+    AndroidViewModel(application) {
+    companion object {
+        private const val ZONES = "zones"
+    }
 
     val colleges = MutableLiveData<List<CollegeZone>>()
+
+    init {
+        val zones = stateHandle.get<List<CollegeZone>>(ZONES)
+        if (zones != null) {
+            colleges.value = zones
+        }
+    }
+
     @Suppress("BlockingMethodInNonBlockingContext")
     fun loadColleges() {
         GlobalScope.launch(Dispatchers.Main) {
-            colleges.value = withContext(Dispatchers.IO) {
+            val zones = withContext(Dispatchers.IO) {
                 val json = getApplication<Application>().resources
                     .openRawResource(R.raw.college)
                     .bufferedReader().readText()
@@ -35,6 +47,8 @@ class CollegeViewModel(application: Application) : AndroidViewModel(application)
                 }
                 collegeWrapper.zone.sortedBy { it.sort }
             }
+            colleges.value = zones
+            stateHandle.set(ZONES, ArrayList(zones))
         }
 
     }
