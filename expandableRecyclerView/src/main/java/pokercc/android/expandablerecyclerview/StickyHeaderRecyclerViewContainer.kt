@@ -119,7 +119,9 @@ private class StickyHeaderDecoration(private val callback: Callback) :
             }
             return
         }
-        if (expandableAdapter.isExpand(groupPosition)) {
+        if (expandableAdapter.isExpand(groupPosition)
+            && expandableAdapter.getChildCount(groupPosition) > 0
+        ) {
             val groupItemViewType = expandableAdapter.getGroupItemViewType(groupPosition)
             // 创建数据
             if (this.headerViewHolder == null || this.headerViewType != groupItemViewType) {
