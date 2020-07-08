@@ -8,7 +8,14 @@
 - 展开的状态保存和恢复
 - 支持展开和关闭全部
 
+如果使用:
+1. 引入依赖
 
+```implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")```
+
+2. 配置代码
+- 在布局中使用ExpandableRecyclerView
+- 继承ExpandableAdapter,实现自己的adapter
 
 
 注意事项:
