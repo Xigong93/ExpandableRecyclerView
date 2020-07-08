@@ -123,7 +123,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
             && expandableAdapter.getChildCount(groupPosition) > 0
         ) {
             val groupItemViewType = expandableAdapter.getGroupItemViewType(groupPosition)
-            // 创建数据
+            // 创建ViewHolder
             if (this.headerViewHolder == null || this.headerViewType != groupItemViewType) {
                 this.headerGroupPosition = -1
                 this.headerViewType = groupItemViewType
@@ -131,7 +131,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
                     expandableAdapter.onCreateViewHolder(parent, groupItemViewType)
             }
 
-            // 绑定数据
+            // 绑定ViewHolder
             val headerViewHolder = this.headerViewHolder!!
             if (this.headerGroupPosition != groupPosition) {
                 expandableAdapter.onBindViewHolder(
