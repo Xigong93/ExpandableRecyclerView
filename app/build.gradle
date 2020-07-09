@@ -5,6 +5,14 @@ apply plugin: 'kotlin-kapt'
 apply from: rootProject.file("config.gradle.kt")
 def appVersion = new AppVersion(1, 0, 0)
 android {
+    signingConfigs {
+        debug {
+            storeFile rootProject.file("debug.keystore")
+            storePassword '123456'
+            keyAlias 'ccc'
+            keyPassword '123456'
+        }
+    }
     defaultConfig {
         applicationId "pokercc.android.expandablerecyclerview.sample"
         versionCode appVersion.versionCode
@@ -13,6 +21,9 @@ android {
 
     viewBinding.enabled = true
     buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
