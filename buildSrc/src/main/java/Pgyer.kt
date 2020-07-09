@@ -187,7 +187,7 @@ private fun uploadApk(
         .addFormDataPart("buildUpdateDescription", updateDesc)
         .addFormDataPart(
             "buildInstallType",
-            2.toString()
+            1.toString()
         )//(必填)应用安装方式，值为(2,3，4)。2：密码安装，3：邀请安装，4：回答问题安装。
         .addFormDataPart("buildPassword", "123456")
         .addFormDataPart(
