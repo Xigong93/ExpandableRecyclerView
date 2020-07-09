@@ -1,14 +1,28 @@
 # ExpandableRecyclerView ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
 使用RecyclerView 实现的折叠列表
-支持特性:
+
+## 效果图
+
+### 粘性头部:
+![粘性头部](./img/stick_header.gif)
+
+
+### 最后一个条目展开动画:
+![最后一个条目展开](./img/last_group_expand.gif)
+
+### GridLayoutManager:
+![GridLayout](./img/grid_layout.gif)
+
+## 支持特性:
 - 流畅的展开和关闭动画
 - 支持只展开一个Group
-- 支持多类型item
-- 支持粘性头(Sticky Header)
-- 展开的状态保存和恢复
 - 支持展开和关闭全部
+- 支持多类型item
+- 支持LinearLayoutManager和GridLayoutManager
+- 支持粘性头(Sticky Header)
+- 展开的状态保存和恢复(横竖屏切换时)
 
-如果使用:
+## 如何使用:
 1. 引入依赖
 
 ```implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")```
