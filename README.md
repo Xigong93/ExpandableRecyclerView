@@ -29,7 +29,13 @@
 
 ## 如何使用:
 1. 引入依赖
-```implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")```
+
+last_version = ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
+
+```gradle
+implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")
+
+```
 
 2. 配置代码
 - 在布局中使用ExpandableRecyclerView
