@@ -3,12 +3,12 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 apply from: rootProject.file("config.gradle.kt")
-
+def appVersion = new AppVersion(1, 0, 0)
 android {
     defaultConfig {
         applicationId "pokercc.android.expandablerecyclerview.sample"
-        versionCode 1
-        versionName "1.0"
+        versionCode appVersion.versionCode
+        versionName appVersion.versionName
     }
 
     viewBinding.enabled = true
@@ -42,4 +42,22 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
+}
+
+def localProperties() {
+    Properties properties = new Properties()
+    File localFile = project.rootProject.file('local.properties')
+    if (localFile.exists()) {
+        properties.load(localFile.newDataInputStream())
+    }
+    return properties
+}
+
+Properties properties = localProperties()
+
+apply plugin: UploadPgyer
+UploadConfig {
+    appName("ExpandableRecyclerView")
+    appDownloadUrl("https://pgyer.com/ExpandableRecyclerView")
+    pgyerApiKey(properties.getProperty("pgyer.apikey"))
 }

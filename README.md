@@ -22,9 +22,12 @@
 - 支持粘性头(Sticky Header)
 - 展开的状态保存和恢复(横竖屏切换时)
 
+## 欢迎下载demo，体验效果
+下载地址:https://www.pgyer.com/ExpandableRecyclerView
+![ExpandableRecyclerView](./img/ExpandableRecyclerView.png)
+
 ## 如何使用:
 1. 引入依赖
-
 ```implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")```
 
 2. 配置代码
