@@ -46,26 +46,32 @@ implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${
 - 使用StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView请设置不透明的背景，否则会发生穿透的情况
 - ExpandableRecyclerView的height需要设置为match_parent或固定大小,否则在展开和关闭时，RecyclerView的高度会发生变化导致动画的执行有问题 
 
-
+**详细使用请参考demo**
 ## 原理分析
 ### 如何展开和折叠一个group
-使用的RecyclerView.Adapter.notifyItemInsert()方法，
-但是这个函数，使用的展开和折叠的动画默认都是alpha动画，想实现children item在下面，group滑开children 显示，只需要把alpha 动画改成不执行就可以了。
-把alpha 动画修改为不执行之后,会出现child item 覆盖到group item上面的问题，因为child item 是后添加的，所以child item的绘制索引大于group
+使用的RecyclerView.Adapter.notifyItemInsert()方法
+
+    但是这个函数，使用的展开和折叠的动画默认都是alpha动画，想实现children item在下面，group滑开children 显示，只需要把alpha 动画改成不执行就可以了。
+    把alpha 动画修改为不执行之后,会出现child item 覆盖到group item上面的问题，因为child item 是后添加的，所以child item的绘制索引大于group
 
 ### 怎么解决child 覆盖group的问题呢？
-有两种方案:
+有下面几种方案:
 1. 给全部的child 设置z，让child item 在绘制顺序上都低于group item
-缺点：
-- group item 需要设置纯色背景
-- View.setZ() 是有版本限制的，最低api 21
-- 有时候groupPosition=0的childItem 会覆盖到groupPosition=1的childItem
-- 当点击展开倒数第二个
+
+    缺点：
+    - group item 需要设置纯色背景
+    - View.setZ() 是有版本限制的，最低api 21
+    - 有时候groupPosition=0的childItem 会覆盖到groupPosition=1的childItem
+    - 当点击展开倒数第二个
 2. 实现RecyclerView.setChildDrawingOrderCallback()函数
-- group item 需要设置纯色背景
-- 有时候groupPosition=0的childItem 会覆盖到groupPosition=1的childItem
+    
+    缺点:
+    - group item 需要设置纯色背景
+    - 有时候groupPosition=0的childItem 会覆盖到groupPosition=1的childItem
 3. 使用裁剪的方案
-重写RecyclerView.drawChild()方法，需要在执行动画的过程中，裁剪child item
+
+这是最完美的解决方案，只需要重写RecyclerView.drawChild()方法，需要在执行动画的过程中，裁剪child item
+    
 ```kotlin
 override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
         return clipAndDrawChild(canvas, child) {
@@ -122,58 +128,6 @@ override fun draw(c: Canvas) {
     }
 }
 ```
-### 如何处理在动画过程中事件分发问题呢？
-关键方法是:
-```java
-/**
-    * Returns true if a child view contains the specified point when transformed
-    * into its coordinate space.
-    * Child must not be null.
-    * @hide
-    */
-@UnsupportedAppUsage
-protected boolean isTransformedTouchPointInView(float x, float y, View child,
-        PointF outLocalPoint) {
-    final float[] point = getTempPoint();
-    point[0] = x;
-    point[1] = y;
-    transformPointToViewLocal(point, child);
-    final boolean isInView = child.pointInView(point[0], point[1]);
-    if (isInView && outLocalPoint != null) {
-        outLocalPoint.set(point[0], point[1]);
-    }
-    return isInView;
-}
-
-```
-嘿嘿，但是这个方法不让app使用，发现其中调用
-```
-
-
-
-    /**
-     * Determines whether the given point, in local coordinates is inside the view.
-     */
-    /*package*/ final boolean pointInView(float localX, float localY) {
-        return pointInView(localX, localY, 0);
-    }
-
-    /**
-     * Utility method to determine whether the given point, in local coordinates,
-     * is inside the view, where the area of the view is expanded by the slop factor.
-     * This method is called while processing touch-move events to determine if the event
-     * is still within the view.
-     *
-     * @hide
-     */
-    @UnsupportedAppUsage
-    public boolean pointInView(float localX, float localY, float slop) {
-        return localX >= -slop && localY >= -slop && localX < ((mRight - mLeft) + slop) &&
-                localY < ((mBottom - mTop) + slop);
-    }
-
-```
-
 
 
 传送门:https://github.com/pokercc/ExpandableRecyclerView
