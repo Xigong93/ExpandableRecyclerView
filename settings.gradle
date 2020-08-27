@@ -1,3 +1,4 @@
 include ':expandableRecyclerView'
 include ':app'
+include ':app_java'
 rootProject.name = "ExpandableRecyclerViewRoot"

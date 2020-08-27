@@ -5,6 +5,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.SparseBooleanArray
 import android.view.ViewGroup
+import androidx.annotation.CallSuper
 import androidx.annotation.UiThread
 import androidx.core.util.putAll
 import androidx.core.util.set
@@ -53,6 +54,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
 
     private var recyclerView: RecyclerView? = null
 
+    @CallSuper
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         require(recyclerView is ExpandableRecyclerView)
@@ -60,6 +62,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         setDataInternal()
     }
 
+    @CallSuper
     override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
         super.onDetachedFromRecyclerView(recyclerView)
         this.recyclerView = null
@@ -230,7 +233,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         return getGroupAdapterPosition(groupPosition) + 1 + childPosition
     }
 
-    override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): VH {
+    final override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): VH {
         return if (isGroup(viewType)) {
             onCreateGroupViewHolder(viewGroup, viewType)
         } else {
@@ -254,13 +257,9 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     open fun getChildItemViewType(groupPosition: Int, childPosition: Int): Int = -1
     open fun isGroup(viewType: Int): Boolean = viewType > 0
 
-    override fun onBindViewHolder(viewHolder: VH, position: Int) = Unit
+    final override fun onBindViewHolder(viewHolder: VH, position: Int) = Unit
 
-    override fun onBindViewHolder(
-        holder: VH,
-        position: Int,
-        payloads: List<Any>
-    ) {
+    final override fun onBindViewHolder(holder: VH, position: Int, payloads: MutableList<Any>) {
         val item = items[position]
         if (isGroup(getItemViewType(position))) {
             val parent = item as RealItem.Parent
