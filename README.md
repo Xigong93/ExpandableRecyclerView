@@ -21,6 +21,7 @@
 - 支持LinearLayoutManager和GridLayoutManager
 - 支持粘性头(Sticky Header)
 - 展开的状态保存和恢复(横竖屏切换时)
+- 支持java工程集成(大于v0.6.0版本)
 
 ## 欢迎下载demo，体验效果
 下载地址:https://www.pgyer.com/ExpandableRecyclerView
