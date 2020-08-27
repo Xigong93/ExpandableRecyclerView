@@ -87,7 +87,11 @@ private class StickyHeaderDecoration(private val callback: Callback) :
             if (headerGroupPosition in positionStart..(positionStart + itemCount)) {
                 val viewHolder = headerViewHolder ?: return
                 val payloads = if (payload != null) listOf(payload) else emptyList()
-                expandableAdapter?.onBindViewHolder(viewHolder, headerGroupPosition, payloads)
+                expandableAdapter?.onBindViewHolder(
+                    viewHolder,
+                    headerGroupPosition,
+                    payloads.toMutableList()
+                )
             }
 
         }
@@ -136,7 +140,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
             if (this.headerGroupPosition != groupPosition) {
                 expandableAdapter.onBindViewHolder(
                     headerViewHolder, expandableAdapter.getGroupAdapterPosition(groupPosition),
-                    emptyList()
+                    ArrayList()
                 )
                 this.headerGroupPosition = groupPosition
             }
