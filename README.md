@@ -1,5 +1,5 @@
 # ExpandableRecyclerView ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
-[中文README]("./README_CN.md)
+[中文README](./README_CN.md)
 ## Design Sketch
 
 ### Stick Header:
