@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
+import pokercc.android.expandablerecyclerview.sample.R
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsChildItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsParentItemBinding
 
@@ -60,6 +61,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
             val circleDrawable = CircleDrawable()
             arrowImage.background = circleDrawable
             circleDrawable.progress = if (expand) 1f else 0f
+            holder.binding.shadowView.alpha = if (expand) 1f else 0f
         }
 
     }
@@ -76,8 +78,9 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
             .setDuration(animDuration)
             .rotation(if (expand) -180f else 0f)
             .setUpdateListener {
-                val percent = if (expand) it.animatedFraction else 1 - it.animatedFraction
-                (arrowImage.background as CircleDrawable).progress = percent
+                val progress = if (expand) it.animatedFraction else 1 - it.animatedFraction
+                (arrowImage.background as CircleDrawable).progress = progress
+                holder.binding.shadowView.alpha = progress
             }
             .start()
     }

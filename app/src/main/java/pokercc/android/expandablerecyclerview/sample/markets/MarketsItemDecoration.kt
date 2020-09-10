@@ -61,7 +61,7 @@ class MarketsItemDecoration : RecyclerView.ItemDecoration() {
             val childCount = adapter.getChildCount(groupPosition)
             childPosition == childCount - 1
         }
-        if (isGroup || isLastChild()) {
+        if (/*isGroup ||*/ isLastChild()) {
             outRect.bottom = 12.dpToPx().toInt()
         }
 
