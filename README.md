@@ -2,15 +2,7 @@
 [中文README](./README_CN.md)
 ## Design Sketch
 
-### Stick Header:
-![ ](./img/stick_header.gif)
-
-
-### Last item expand:
-![ ](./img/last_group_expand.gif)
-
-### GridLayoutManager:
-![GridLayout](./img/grid_layout.gif)
+![](./img/accordion.gif)
 
 ## features:
 - Expand and close animations smoothly
@@ -47,4 +39,4 @@ Attention:
 - ExpandableRecyclerView's height must set to match_parent or static size, Otherwise, the RecyclerView height may change during expansion and closure, causing problems for the execution of the animation
 
 
-Design: https://dribbble.com/shots/3253927-Accordion
+Design from: https://dribbble.com/shots/3253927-Accordion
