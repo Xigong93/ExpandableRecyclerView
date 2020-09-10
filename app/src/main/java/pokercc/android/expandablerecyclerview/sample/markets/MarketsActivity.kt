@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import pokercc.android.expandablerecyclerview.ExpandableItemAnimator
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsActivityBinding
 
 class MarketsActivity : AppCompatActivity() {
@@ -20,6 +21,7 @@ class MarketsActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.recyclerView.apply {
             adapter = MarketsAdapter()
+            itemAnimator = ExpandableItemAnimator(this, flowAnim = true)
             addItemDecoration(MarketsItemDecoration())
             layoutManager = LinearLayoutManager(context)
         }

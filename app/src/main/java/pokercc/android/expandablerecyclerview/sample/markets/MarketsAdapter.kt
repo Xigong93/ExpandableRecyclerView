@@ -56,7 +56,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
         holder as MarketParentVH
         if (payloads.isEmpty()) {
             val arrowImage = holder.binding.arrowImage
-            arrowImage.rotation = if (expand) 180f else 0f
+            arrowImage.rotation = if (expand) -180f else 0f
             val circleDrawable = CircleDrawable()
             arrowImage.background = circleDrawable
             circleDrawable.progress = if (expand) 1f else 0f
@@ -74,7 +74,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
         val arrowImage = holder.binding.arrowImage
         arrowImage.animate()
             .setDuration(animDuration)
-            .rotation(if (expand) 180f else 0f)
+            .rotation(if (expand) -180f else 0f)
             .setUpdateListener {
                 val percent = if (expand) it.animatedFraction else 1 - it.animatedFraction
                 (arrowImage.background as CircleDrawable).progress = percent
