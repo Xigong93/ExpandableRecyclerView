@@ -14,7 +14,8 @@ import kotlin.math.max
 
 open class ExpandableItemAnimator(
     private val expandableRecyclerView: ExpandableRecyclerView,
-    animDuration: Long = 300L
+    animDuration: Long = 300L,
+    private val flowAnim: Boolean = false
 ) :
     SimpleItemAnimator() {
     companion object {
@@ -198,8 +199,8 @@ open class ExpandableItemAnimator(
         val view = holder.itemView
         val animation = view.animate()
         mRemoveAnimations.add(holder)
-        if (groupPosition == expandableAdapter.getGroupCount() - 1
-            && !expandableAdapter.isGroup(holder.itemViewType)
+        val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
+        if ((flowAnim || isLastGroup) && !expandableAdapter.isGroup(holder.itemViewType)
             && !groupReachRecyclerViewBottom(groupPosition)
         ) {
             // 最后一组的执行一个展开动画，其他的不执行动画
@@ -250,10 +251,8 @@ open class ExpandableItemAnimator(
         resetAnimation(holder)
         mPendingAdditions.add(holder)
         val groupPosition = expandableAdapter.getGroupPosition(holder)
-        if (groupPosition == expandableAdapter.getGroupCount() - 1 && !expandableAdapter.isGroup(
-                holder.itemViewType
-            )
-        ) {
+        val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
+        if ((isLastGroup || flowAnim) && !expandableAdapter.isGroup(holder.itemViewType)) {
             val maxTranslateY = getGroupMaxTranslateY(groupPosition)
             view.translationY = -maxTranslateY.toFloat()
             view.alpha = 1f
@@ -270,9 +269,8 @@ open class ExpandableItemAnimator(
         mAddAnimations.add(holder)
         view.alpha = 1f
         val groupPosition = expandableAdapter.getGroupPosition(holder)
-        if (groupPosition == expandableAdapter.getGroupCount() - 1
-            && !expandableAdapter.isGroup(holder.itemViewType)
-        ) {
+        val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
+        if ((isLastGroup || flowAnim) && !expandableAdapter.isGroup(holder.itemViewType)) {
             // 最后一组的执行一个展开动画，其他的不执行动画
             val maxTranslateY = getGroupMaxTranslateY(groupPosition)
             // targetY=currentTop+translateY
