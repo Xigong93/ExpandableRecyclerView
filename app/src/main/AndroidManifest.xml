@@ -21,6 +21,7 @@
         <activity android:name=".college.CollegeActivity" />
         <activity android:name=".textbook.TextBookListActivity" />
         <activity android:name=".yuanfudao.YuanfudaoActivity" />
+        <activity android:name=".markets.MarketsActivity" />
     </application>
 
 </manifest>

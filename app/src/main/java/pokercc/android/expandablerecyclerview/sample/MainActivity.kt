@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import pokercc.android.expandablerecyclerview.sample.college.CollegeActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
+import pokercc.android.expandablerecyclerview.sample.databinding.MarketsActivityBinding
+import pokercc.android.expandablerecyclerview.sample.markets.MarketsActivity
 import pokercc.android.expandablerecyclerview.sample.textbook.TextBookListActivity
 import pokercc.android.expandablerecyclerview.sample.yuanfudao.YuanfudaoActivity
 
@@ -12,6 +14,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        binding.marketsButton.setOnClickListener {
+            MarketsActivity.start(it.context)
+        }
         binding.collegeLongListButton.setOnClickListener {
             CollegeActivity.start(it.context, false)
         }

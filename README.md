@@ -23,7 +23,7 @@
 - Support for Java project integration (>= v0.6.0)
 
 ## Welcome to download the demo and experience the effect
-Download Url:https://www.pgyer.com/ExpandableRecyclerView
+Download Url https://www.pgyer.com/ExpandableRecyclerView
 
 ![ExpandableRecyclerView](./img/ExpandableRecyclerView.png)
 
@@ -45,3 +45,6 @@ implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${
 Attention:
 - Using StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView please set an opaque background, otherwise penetration will occur
 - ExpandableRecyclerView's height must set to match_parent or static size, Otherwise, the RecyclerView height may change during expansion and closure, causing problems for the execution of the animation
+
+
+Design: https://dribbble.com/shots/3253927-Accordion
