@@ -70,12 +70,14 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         if (!isAnimating || requireAdapter().isGroup(childViewHolder.itemViewType)) {
             return drawAction(canvas)
         }
+        val layoutManager = layoutManager ?: return drawAction(canvas)
         val childGroupPosition = requireAdapter().getGroupPosition(childViewHolder)
         // 不能越过自己的group,也不能越过上一个group
         val groupView = findGroupViewHolder(childGroupPosition)?.itemView
-        val groupViewBottom = groupView?.let { it.y + it.height } ?: 0f
+        val groupViewBottom =
+            groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
         val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
-        val bottom = nextGroupView?.y ?: height.toFloat()
+        val bottom = nextGroupView?.let { it.y  + layoutManager.getTopDecorationHeight(it) }?: height.toFloat()
         if (DEBUG) {
             val childPosition = requireAdapter().getChildPosition(childViewHolder)
             Log.d(
