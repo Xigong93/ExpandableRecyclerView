@@ -11,13 +11,17 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/markets_shadow_height"
         android:background="@drawable/markets_group_shadow"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:visibility="visible" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
         android:background="@drawable/markets_parent_item_bg"
-        app:layout_constraintBottom_toTopOf="@id/shadow_view"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView

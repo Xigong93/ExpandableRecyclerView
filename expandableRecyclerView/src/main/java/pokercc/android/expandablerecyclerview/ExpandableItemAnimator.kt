@@ -16,14 +16,14 @@ open class ExpandableItemAnimator(
     private val expandableRecyclerView: ExpandableRecyclerView,
     animDuration: Long = 300L,
     private val flowAnim: Boolean = false
-) :
-    SimpleItemAnimator() {
+) : SimpleItemAnimator() {
     companion object {
         private const val LOG_TAG = "ExpandableItemAnimator"
         private val DEBUG = BuildConfig.DEBUG
         private var sDefaultInterpolator: TimeInterpolator? = null
     }
 
+    private val animValue = 0.2f
     private val mPendingRemovals = ArrayList<ViewHolder>()
     private val mPendingAdditions = ArrayList<ViewHolder>()
     private val mPendingMoves = ArrayList<MoveInfo>()
@@ -115,7 +115,7 @@ open class ExpandableItemAnimator(
 //                val holder = changes[0].oldHolder
 //                ViewCompat.postOnAnimationDelayed(holder!!.itemView, changer, removeDuration)
 //            } else {
-                changer.run()
+            changer.run()
 //            }
         }
         // Next, add stuff
@@ -140,7 +140,7 @@ open class ExpandableItemAnimator(
 //                val view = additions[0].itemView
 //                ViewCompat.postOnAnimationDelayed(view, adder, totalDelay)
 //            } else {
-                adder.run()
+            adder.run()
 //            }
         }
     }
@@ -205,7 +205,11 @@ open class ExpandableItemAnimator(
         ) {
             // 最后一组的执行一个展开动画，其他的不执行动画
             view.translationY = 0f
-            val maxTranslateY = getGroupMaxTranslateY(groupPosition)
+            val maxTranslateY = if (isLastGroup) {
+                getGroupMaxTranslateY(groupPosition).toFloat()
+            } else {
+                getGroupMaxTranslateY(groupPosition) * animValue
+            }
             animation.translationY(-maxTranslateY.toFloat())
                 .setDuration(removeDuration)
                 .setListener(object : AnimatorListenerAdapter() {
@@ -253,8 +257,12 @@ open class ExpandableItemAnimator(
         val groupPosition = expandableAdapter.getGroupPosition(holder)
         val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
         if ((isLastGroup || flowAnim) && !expandableAdapter.isGroup(holder.itemViewType)) {
-            val maxTranslateY = getGroupMaxTranslateY(groupPosition)
-            view.translationY = -maxTranslateY.toFloat()
+            val maxTranslateY = if (isLastGroup) {
+                getGroupMaxTranslateY(groupPosition).toFloat()
+            } else {
+                getGroupMaxTranslateY(groupPosition) * animValue
+            }
+            view.translationY = -maxTranslateY
             view.alpha = 1f
         } else {
             view.alpha = 1f
@@ -272,7 +280,11 @@ open class ExpandableItemAnimator(
         val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
         if ((isLastGroup || flowAnim) && !expandableAdapter.isGroup(holder.itemViewType)) {
             // 最后一组的执行一个展开动画，其他的不执行动画
-            val maxTranslateY = getGroupMaxTranslateY(groupPosition)
+            val maxTranslateY = if (isLastGroup) {
+                getGroupMaxTranslateY(groupPosition).toFloat()
+            } else {
+                getGroupMaxTranslateY(groupPosition) * animValue
+            }
             // targetY=currentTop+translateY
             if (DEBUG) {
                 Log.d(

@@ -1,8 +1,10 @@
 package pokercc.android.expandablerecyclerview.sample.markets
 
 import android.animation.ArgbEvaluator
+import android.graphics.Color
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.OvalShape
+import android.graphics.drawable.shapes.RoundRectShape
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -10,6 +12,7 @@ import pokercc.android.expandablerecyclerview.ExpandableAdapter
 import pokercc.android.expandablerecyclerview.sample.R
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsChildItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsParentItemBinding
+import pokercc.android.expandablerecyclerview.sample.dpToPx
 
 class MarketChildVH(val binding: MarketsChildItemBinding) : RecyclerView.ViewHolder(binding.root)
 class MarketParentVH(val binding: MarketsParentItemBinding) : RecyclerView.ViewHolder(binding.root)
@@ -46,6 +49,32 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
     ) {
         holder as MarketChildVH
         holder.binding.title.text = names.getOrNull(childPosition)
+        val childCount = getChildCount(groupPosition)
+        val radius = 4.dpToPx()
+        val shape = when {
+            childCount == 1 -> {
+                RoundRectShape(FloatArray(8) { radius }, null, null)
+            }
+            childPosition == 0 -> {
+                RoundRectShape(
+                    floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f),
+                    null,
+                    null
+                )
+            }
+            childPosition == childCount - 1 -> {
+                RoundRectShape(
+                    floatArrayOf(0f, 0f, 0f, 0f, radius, radius, radius, radius),
+                    null, null
+                )
+            }
+            else -> {
+                RoundRectShape(null, null, null)
+            }
+        }
+        holder.binding.root.background = ShapeDrawable(shape).apply {
+            paint.color = Color.WHITE
+        }
     }
 
     override fun onBindGroupViewHolder(
