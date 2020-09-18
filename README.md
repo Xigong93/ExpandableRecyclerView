@@ -2,15 +2,7 @@
 [中文README](./README_CN.md)
 ## Design Sketch
 
-### Stick Header:
-![ ](./img/stick_header.gif)
-
-
-### Last item expand:
-![ ](./img/last_group_expand.gif)
-
-### GridLayoutManager:
-![GridLayout](./img/grid_layout.gif)
+![](./img/accordion.gif)
 
 ## features:
 - Expand and close animations smoothly
@@ -23,7 +15,7 @@
 - Support for Java project integration (>= v0.6.0)
 
 ## Welcome to download the demo and experience the effect
-Download Url:https://www.pgyer.com/ExpandableRecyclerView
+Download Url https://www.pgyer.com/ExpandableRecyclerView
 
 ![ExpandableRecyclerView](./img/ExpandableRecyclerView.png)
 
@@ -45,3 +37,6 @@ implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${
 Attention:
 - Using StickyHeaderRecyclerViewContainer，GroupViewHolder.itemView please set an opaque background, otherwise penetration will occur
 - ExpandableRecyclerView's height must set to match_parent or static size, Otherwise, the RecyclerView height may change during expansion and closure, causing problems for the execution of the animation
+
+
+Design from: https://dribbble.com/shots/3253927-Accordion
