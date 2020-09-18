@@ -77,7 +77,8 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         val groupViewBottom =
             groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
         val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
-        val bottom = nextGroupView?.let { it.y  + layoutManager.getTopDecorationHeight(it) }?: height.toFloat()
+        val bottom = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
+            ?: height.toFloat()
         if (DEBUG) {
             val childPosition = requireAdapter().getChildPosition(childViewHolder)
             Log.d(

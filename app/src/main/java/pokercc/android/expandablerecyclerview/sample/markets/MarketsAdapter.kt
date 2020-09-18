@@ -90,7 +90,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
             val circleDrawable = CircleDrawable()
             arrowImage.background = circleDrawable
             circleDrawable.progress = if (expand) 1f else 0f
-            holder.binding.shadowView.alpha = if (expand) 1f else 0f
+//            holder.binding.shadowView.alpha = if (expand) 1f else 0f
         }
 
     }
@@ -109,7 +109,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
             .setUpdateListener {
                 val progress = if (expand) it.animatedFraction else 1 - it.animatedFraction
                 (arrowImage.background as CircleDrawable).progress = progress
-                holder.binding.shadowView.alpha = progress
+//                holder.binding.shadowView.alpha = progress
             }
             .start()
     }
