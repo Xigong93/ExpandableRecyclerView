@@ -21,7 +21,7 @@ class MarketsActivity : AppCompatActivity() {
         setContentView(binding.root)
         binding.recyclerView.apply {
             adapter = MarketsAdapter()
-            itemAnimator = ExpandableItemAnimator(this, flowAnim = true)
+            itemAnimator = ExpandableItemAnimator(this, animChildrenItem = true)
             addItemDecoration(MarketsItemDecoration())
             layoutManager = LinearLayoutManager(context)
         }
