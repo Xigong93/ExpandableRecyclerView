@@ -4,8 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.doOnPreDraw
 import androidx.recyclerview.widget.LinearLayoutManager
-import pokercc.android.expandablerecyclerview.sample.databinding.*
+import pokercc.android.expandablerecyclerview.sample.databinding.YuanfudaoActivityBinding
 
 /**
  * 教材列表页面
@@ -29,12 +30,9 @@ class YuanfudaoActivity : AppCompatActivity() {
         setContentView(binding.root)
         val rv = binding.recyclerView
         rv.layoutManager = LinearLayoutManager(this)
-//        rv.addItemDecoration(YuanfudaoItemDecorator())
-        rv.adapter = YudanfudaoAdapter().apply {
-            expandAllGroup()
-            collapseAllGroup()
-        }
-        rv.itemAnimator = YuanfudaoItemAnimator(rv)
+        val yudanfudaoAdapter = YudanfudaoAdapter()
+        rv.adapter = yudanfudaoAdapter
+        yudanfudaoAdapter.expandGroup(0, true)
     }
 
 }

@@ -148,7 +148,7 @@ class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
     @Override
     protected void onBindGroupViewHolder(RecyclerView.ViewHolder holder, int groupPosition, boolean expand, List<?> payloads) {
         CollegeZone collegeZone = data.get(groupPosition);
-        if (payloads.isEmpty()) {
+        if (payloads.isEmpty()) {// 判断一下是不是首次绑定
             if (holder instanceof ProvinceVH) {
                 ((ProvinceVH) holder).itemBinding.titleText.setText(collegeZone.name);
                 ((ProvinceVH) holder).itemBinding.arrowImage.setRotation(expand ? 0 : -90);
