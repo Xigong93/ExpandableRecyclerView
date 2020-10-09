@@ -2,6 +2,7 @@ package pokercc.android.expandablerecyclerview.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import pokercc.android.expandablerecyclerview.sample.changeadapter.ChangeAdapterActivity
 import pokercc.android.expandablerecyclerview.sample.college.CollegeActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsActivityBinding
@@ -28,6 +29,9 @@ class MainActivity : AppCompatActivity() {
         }
         binding.yuanfudaoButton.setOnClickListener {
             YuanfudaoActivity.start(it.context)
+        }
+        binding.changeAdapter.setOnClickListener {
+            ChangeAdapterActivity.start(it.context)
         }
     }
 }
