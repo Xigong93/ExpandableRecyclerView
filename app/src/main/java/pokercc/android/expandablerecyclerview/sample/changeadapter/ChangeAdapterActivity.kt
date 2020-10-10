@@ -31,7 +31,7 @@ class ChangeAdapterActivity : AppCompatActivity() {
         binding.recyclerView.adapter = CountAdapter(3, 2)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.changeAdapter.setOnClickListener {
-            binding.recyclerView.adapter = CountAdapter(Random.nextInt(4), Random.nextInt(10))
+            binding.recyclerView.adapter = CountAdapter(Random.nextInt(1, 4), Random.nextInt(2, 10))
         }
     }
 }
