@@ -38,7 +38,7 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
     var mMoveAnimations = ArrayList<ViewHolder?>()
     var mRemoveAnimations = ArrayList<ViewHolder?>()
     var mChangeAnimations = ArrayList<ViewHolder?>()
-    private val expandableAdapter: ExpandableAdapter<*> = expandableRecyclerView.requireAdapter()
+    private val expandableAdapter: ExpandableAdapter<*> get() = expandableRecyclerView.requireAdapter()
 
     init {
         addDuration = animDuration
