@@ -5,12 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <pokercc.android.expandablerecyclerview.ExpandableRecyclerView
-        android:id="@+id/recycler_view"
+
+    <pokercc.android.expandablerecyclerview.StickyHeaderRecyclerViewContainer
         android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/change_adapter"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <pokercc.android.expandablerecyclerview.ExpandableRecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </pokercc.android.expandablerecyclerview.StickyHeaderRecyclerViewContainer>
+
 
     <Button
         android:id="@+id/change_adapter"
