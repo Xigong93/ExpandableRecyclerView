@@ -24,6 +24,7 @@
         <activity
             android:name=".markets.MarketsActivity"
             android:theme="@style/AppTheme.FullScreen" />
+        <activity android:name=".changeadapter.ChangeAdapterActivity" />
     </application>
 
 </manifest>
