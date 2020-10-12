@@ -15,9 +15,7 @@
 - Support for Java project integration (>= v0.6.0)
 
 ## Welcome to download the demo and experience the effect
-Download Url https://www.pgyer.com/ExpandableRecyclerView
-
-![ExpandableRecyclerView](./img/ExpandableRecyclerView.png)
+Download Url https://github.com/pokercc/ExpandableRecyclerView/releases
 
 ## How to use:
 1. include dependence
