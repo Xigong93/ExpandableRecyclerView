@@ -72,5 +72,5 @@ apply plugin: UploadPgyer
 UploadConfig {
     appName("ExpandableRecyclerView")
     appDownloadUrl("https://pgyer.com/ExpandableRecyclerView")
-    pgyerApiKey(properties.getProperty("pgyer.apikey"))
+    pgyerApiKey(properties.getProperty("pgyer.apikey", ""))
 }
