@@ -48,11 +48,13 @@ class StickyHeaderRecyclerViewContainer @JvmOverloads constructor(
         }
         header?.let { removeView(it) }
         header = itemView
-        val layoutParams = LayoutParams(
-            LayoutParams.MATCH_PARENT,
-            LayoutParams.WRAP_CONTENT,
-            Gravity.TOP
-        )
+        val layoutParams = if (itemView.layoutParams != null) {
+            LayoutParams(itemView.layoutParams)
+        } else {
+            LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+        }.apply {
+            gravity = Gravity.TOP
+        }
         addView(header, layoutParams)
     }
 
