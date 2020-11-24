@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import pokercc.android.expandablerecyclerview.ExpandableAdapter
+import pokercc.android.expandablerecyclerview.sample.MenuActivity
 import pokercc.android.expandablerecyclerview.sample.R
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsChildItemBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsParentItemBinding
@@ -75,6 +76,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
         holder.binding.root.background = ShapeDrawable(shape).apply {
             paint.color = Color.WHITE
         }
+        holder.itemView.setOnClickListener { MenuActivity.start(it.context) }
     }
 
     override fun onBindGroupViewHolder(
