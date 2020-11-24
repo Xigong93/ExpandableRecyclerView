@@ -1,5 +1,7 @@
 package pokercc.android.expandablerecyclerview.sample
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import pokercc.android.expandablerecyclerview.sample.changeadapter.ChangeAdapterActivity
@@ -10,14 +12,17 @@ import pokercc.android.expandablerecyclerview.sample.markets.MarketsActivity
 import pokercc.android.expandablerecyclerview.sample.textbook.TextBookListActivity
 import pokercc.android.expandablerecyclerview.sample.yuanfudao.YuanfudaoActivity
 
-class MainActivity : AppCompatActivity() {
+class MenuActivity : AppCompatActivity() {
+    companion object {
+        fun start(context: Context) {
+            context.startActivity(Intent(context, MenuActivity::class.java))
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.marketsButton.setOnClickListener {
-            MarketsActivity.start(it.context)
-        }
         binding.collegeLongListButton.setOnClickListener {
             CollegeActivity.start(it.context, false)
         }

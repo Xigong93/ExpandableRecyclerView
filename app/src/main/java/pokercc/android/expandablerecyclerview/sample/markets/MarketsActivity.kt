@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import pokercc.android.expandablerecyclerview.ExpandableItemAnimator
+import pokercc.android.expandablerecyclerview.sample.MenuActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsActivityBinding
 
 class MarketsActivity : AppCompatActivity() {
@@ -19,7 +20,7 @@ class MarketsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        binding.recyclerView.apply {
+        with(binding.recyclerView) {
             adapter = MarketsAdapter()
             itemAnimator = ExpandableItemAnimator(this, animChildrenItem = true)
             addItemDecoration(MarketsItemDecoration())
