@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import java.util.*
 
 /**
- * 可展开的数据适配器
+ * ExpandableAdapter working with ExpandableRecyclerView
  * @author pokercc
  * @date 2019-6-2 11:38:13
  * */

@@ -2,21 +2,24 @@ package pokercc.android.expandablerecyclerview
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.PointF
 import android.os.Parcel
 import android.os.Parcelable
 import android.os.Parcelable.ClassLoaderCreator
 import android.util.AttributeSet
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import androidx.core.view.children
 import androidx.customview.view.AbsSavedState
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.max
+import kotlin.math.min
 
 /**
- * 可展开的RecycleView
- * - 支持展开动画，防止View动画错乱
+ * ExpandableRecyclerView with smoothness animation.
  * @author pokercc
- * @date 2020年06月30日22:18:47
+ * @date 2020-06-30.22:18:47
  */
 open class ExpandableRecyclerView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -30,7 +33,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
 
     override fun draw(c: Canvas) {
         super.draw(c)
-        // 修复动画不更新的bug
+        // To fix animation not update bugs.
         if (itemDecorationCount == 0 && isAnimating) {
             postInvalidateOnAnimation()
         }
@@ -51,6 +54,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         return requireNotNull(getExpandableAdapter())
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun getExpandableAdapter(): ExpandableAdapter<*>? {
         return adapter as? ExpandableAdapter<*>
     }
@@ -62,17 +66,18 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
     }
 
     /**
-     * 裁剪和绘制
+     * Clip and draw
      */
+    @Suppress("MemberVisibilityCanBePrivate")
     fun <T> clipAndDrawChild(canvas: Canvas, child: View, drawAction: (Canvas) -> T): T {
         val childViewHolder = getChildViewHolder(child)
-        // 不裁减GroupViewHolder
+        // Ignore group
         if (!isAnimating || requireAdapter().isGroup(childViewHolder.itemViewType)) {
             return drawAction(canvas)
         }
         val layoutManager = layoutManager ?: return drawAction(canvas)
         val childGroupPosition = requireAdapter().getGroupPosition(childViewHolder)
-        // 不能越过自己的group,也不能越过上一个group
+        // Child must draw between it's group and next group.
         val groupView = findGroupViewHolder(childGroupPosition)?.itemView
         val groupViewBottom =
             groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
@@ -86,7 +91,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
                 "group:${childGroupPosition},child:$childPosition,top:$groupViewBottom,bottom:${bottom}"
             )
         }
-        // 裁剪
+        // Clip
         val saveCount = canvas.save()
         try {
             canvas.clipRect(
@@ -99,6 +104,43 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         } finally {
             canvas.restoreToCount(saveCount)
         }
+    }
+
+    /**
+     * Hook system method to handle touch event.
+     */
+    @Suppress("MemberVisibilityCanBePrivate", "unused")
+    protected fun isTransformedTouchPointInView(
+        x: Float, y: Float, child: View,
+        outLocalPoint: PointF?
+    ): Boolean {
+        outLocalPoint?.apply {
+            set(x, y)
+            this.x += scrollX + child.left
+            this.y += scrollY + child.top
+        }
+        val childViewHolder = getChildViewHolder(child)
+        return if (!isAnimating || requireAdapter().isGroup(childViewHolder.itemViewType)) {
+            x >= child.x && x <= (child.x + child.width) && y >= child.y && y <= (child.y + child.height)
+        } else {
+            childContain(childViewHolder, x, y)
+        }
+    }
+
+    private fun childContain(child: ViewHolder, x: Float, y: Float): Boolean {
+        val layoutManager = layoutManager ?: return false
+        val childGroupPosition = requireAdapter().getGroupPosition(child)
+        val groupView = findGroupViewHolder(childGroupPosition)?.itemView
+        val groupBottom =
+            groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) }
+                ?: 0f
+        val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
+        val nextGroupTop = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
+            ?: height.toFloat()
+        val itemView = child.itemView
+        val borderTop = max(itemView.y, groupBottom)
+        val borderBottom = min(itemView.y + itemView.height, nextGroupTop)
+        return x >= itemView.left && x <= itemView.right && y >= borderTop && y <= borderBottom
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
