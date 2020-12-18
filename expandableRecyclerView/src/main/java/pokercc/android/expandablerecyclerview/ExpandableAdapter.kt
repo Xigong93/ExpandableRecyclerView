@@ -1,8 +1,8 @@
 package pokercc.android.expandablerecyclerview
 
-import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
+import android.util.Log
 import android.util.SparseBooleanArray
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
@@ -11,7 +11,6 @@ import androidx.core.util.putAll
 import androidx.core.util.set
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import java.util.*
 
 /**
  * ExpandableAdapter working with ExpandableRecyclerView
@@ -19,36 +18,27 @@ import java.util.*
  * @date 2019-6-2 11:38:13
  * */
 @UiThread
-abstract class ExpandableAdapter<VH : ViewHolder>() :
+abstract class ExpandableAdapter<VH : ViewHolder> :
     RecyclerView.Adapter<VH>() {
     companion object {
         @Suppress("MayBeConstant")
-        val DEBUG = BuildConfig.DEBUG
-        private const val GROUP_INDEX_FLAG = 3 shl 24 + 1
-        private const val CHILD_INDEX_FLAG = 3 shl 24 + 2
+        var DEBUG = BuildConfig.DEBUG
+        private const val LOG_TAG = "ExpandableAdapter"
         private val GROUP_EXPAND_CHANGE = Any()
     }
 
-    private sealed class RealItem {
-        class Parent(val groupPosition: Int) : RealItem()
+    private data class PositionInfo(
+        var groupPosition: Int,
+        var childPosition: Int?
+    )
 
-        class Child(
-            val groupPosition: Int,
-            val childPosition: Int
-        ) : RealItem()
-    }
+    private val tempPositionInfo = PositionInfo(0, null)
 
-    private val items: MutableList<RealItem> = ArrayList()
-    private val groupItems: MutableList<RealItem.Parent> = ArrayList()
     private val expandState = SparseBooleanArray()
 
-    /**
-     * 设置只展开一个group
-     */
     @Suppress("MemberVisibilityCanBePrivate")
     var onlyOneGroupExpand = false
 
-    /** 是否开启展开动画 */
     @Suppress("MemberVisibilityCanBePrivate")
     var enableAnimation = true
 
@@ -59,7 +49,6 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         super.onAttachedToRecyclerView(recyclerView)
         require(recyclerView is ExpandableRecyclerView)
         this.recyclerView = recyclerView
-        setDataInternal()
     }
 
     @CallSuper
@@ -69,164 +58,129 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     }
 
     /**
-     * 某个group是否展开
+     * Whether the  special group is expand
      *
      * @param groupPosition
      * @return
      */
     @Suppress("MemberVisibilityCanBePrivate", "MemberVisibilityCanBePrivate")
     fun isExpand(groupPosition: Int): Boolean {
-        return expandState[groupPosition] ?: false
+        return expandState[groupPosition]
     }
 
     private fun setExpand(groupPosition: Int, expand: Boolean) {
         expandState[groupPosition] = expand
-    }
-
-    private fun setDataInternal() {
-        check(Looper.myLooper() == Looper.getMainLooper())
-        this.items.clear()
-        this.groupItems.clear()
-        for (i in 0 until getGroupCount()) {
-            val parent = RealItem.Parent(i)
-            items.add(parent)
-            groupItems.add(parent)
-            if (!isExpand(i)) continue
-            for (j in 0 until getChildCount(i)) {
-                items.add(RealItem.Child(i, j))
-            }
-        }
-    }
-
-    private fun performGroupExpandChange(groupPosition: Int, expand: Boolean) {
-        val groupLayoutPosition = getGroupAdapterPosition(groupPosition)
-        onGroupExpandChange(groupPosition, groupLayoutPosition, expand)
+        onGroupExpandChange(groupPosition, expand)
         notifyGroupChange(groupPosition, GROUP_EXPAND_CHANGE)
     }
 
+
+    @Deprecated("deprecated", replaceWith = ReplaceWith("onGroupExpandChange(int, boolean)"))
     protected open fun onGroupExpandChange(
         groupPosition: Int,
         adapterPosition: Int,
         expand: Boolean
     ) = Unit
 
-    /**
-     * 展开全部的group
-     */
+    protected open fun onGroupExpandChange(
+        groupPosition: Int,
+        expand: Boolean
+    ) {
+        @Suppress("DEPRECATION")
+        onGroupExpandChange(groupPosition, getGroupAdapterPosition(groupPosition), expand)
+    }
+
     fun expandAllGroup() {
         onlyOneGroupExpand = false
         for (i in 0 until getGroupCount()) {
             expandState[i] = true
         }
-        setDataInternal()
         notifyDataSetChanged()
     }
 
-    /**
-     * 折叠全部的group
-     */
     fun collapseAllGroup() {
         for (i in 0 until getGroupCount()) {
             expandState[i] = false
         }
-        setDataInternal()
         notifyDataSetChanged()
     }
 
     /**
-     * 展开一个group
      *
      * @param groupPosition
      * @param anim
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun expandGroup(groupPosition: Int, anim: Boolean) {
-        if (onlyOneGroupExpand) {
-            for (i in 0 until getGroupCount()) {
-                val item = groupItems[i]
-                if (i == groupPosition && !isExpand(i)) {
-                    setExpand(i, true)
-                    // 改变数据源布局刷新
-                    setDataInternal()
-                    performGroupExpandChange(i, true)
-                    if (anim) {
-                        notifyItemRangeInserted(
-                            getGroupAdapterPosition(groupPosition) + 1,
-                            getChildCount(item.groupPosition)
-                        )
-                    } else {
-                        notifyDataSetChanged()
-                    }
-                } else if (isExpand(i)) {
-                    setExpand(i, false)
-                    // 改变数据源布局刷新
-                    setDataInternal()
-                    performGroupExpandChange(i, false)
-                    if (anim) {
-                        notifyItemRangeRemoved(
-                            getGroupAdapterPosition(i) + 1,
-                            getChildCount(item.groupPosition)
-                        )
-                    } else {
-                        notifyDataSetChanged()
-                    }
-                }
-            }
-        } else {
-            val item = groupItems[groupPosition]
+        if (!onlyOneGroupExpand) {
             if (!isExpand(groupPosition)) {
                 setExpand(groupPosition, true)
-                // 改变数据源布局刷新
-                setDataInternal()
-                performGroupExpandChange(groupPosition, true)
                 if (anim) {
                     notifyItemRangeInserted(
-                        getGroupAdapterPosition(groupPosition) + 1,
-                        getChildCount(item.groupPosition)
+                        getChildAdapterPosition(groupPosition, 0),
+                        getChildCount(groupPosition)
                     )
                 } else {
                     notifyDataSetChanged()
                 }
             }
+            return
         }
+
+        if (anim) {
+            for (i in 0 until getGroupCount()) {
+                if (i == groupPosition && !isExpand(i)) {
+                    setExpand(i, true)
+                    notifyItemRangeInserted(getChildAdapterPosition(i, 0), getChildCount(i))
+                } else if (isExpand(i)) {
+                    setExpand(i, false)
+                    notifyItemRangeRemoved(getChildAdapterPosition(i, 0), getChildCount(i))
+                }
+            }
+        } else {
+            for (i in 0 until getGroupCount()) {
+                if (i == groupPosition && !isExpand(i)) {
+                    setExpand(i, true)
+                } else if (isExpand(i)) {
+                    setExpand(i, false)
+                }
+            }
+            notifyDataSetChanged()
+        }
+
     }
 
     /**
-     * 折叠一个group
      *
      * @param groupPosition
      * @param anim
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun collapseGroup(groupPosition: Int, anim: Boolean) {
-        val item = groupItems[groupPosition]
         if (isExpand(groupPosition)) {
             setExpand(groupPosition, false)
-            // 改变数据源布局刷新
-            setDataInternal()
             if (anim) {
                 notifyItemRangeRemoved(
-                    getGroupAdapterPosition(groupPosition) + 1,
-                    getChildCount(item.groupPosition)
+                    getChildAdapterPosition(groupPosition, 0),
+                    getChildCount(groupPosition)
                 )
             } else {
                 notifyDataSetChanged()
             }
-            performGroupExpandChange(groupPosition, false)
         }
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
     fun getGroupAdapterPosition(groupPosition: Int): Int {
-        var position = 0
+        var position = groupPosition
         for (i in 0 until groupPosition) {
-            position++
             if (isExpand(i)) {
                 position += getChildCount(i)
             }
         }
         return position
     }
+
 
     @Suppress("MemberVisibilityCanBePrivate")
     fun getChildAdapterPosition(groupPosition: Int, childPosition: Int): Int {
@@ -242,90 +196,55 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     }
 
     final override fun getItemViewType(position: Int): Int {
-        val realItem = items[position]
-        return if (realItem is RealItem.Parent) {
-            getGroupItemViewType(realItem.groupPosition)
+        val (groupPosition, childPosition) = getPositionInfo(position)
+        return if (childPosition == null) {
+            getGroupItemViewType(groupPosition)
         } else {
-            getChildItemViewType(
-                (realItem as RealItem.Child).groupPosition,
-                realItem.childPosition
-            )
+            getChildItemViewType(groupPosition, childPosition)
         }
     }
 
     open fun getGroupItemViewType(groupPosition: Int): Int = 1
+
     open fun getChildItemViewType(groupPosition: Int, childPosition: Int): Int = -1
+
     open fun isGroup(viewType: Int): Boolean = viewType > 0
 
     final override fun onBindViewHolder(viewHolder: VH, position: Int) = Unit
 
     final override fun onBindViewHolder(holder: VH, position: Int, payloads: MutableList<Any>) {
-        val item = items[position]
-        if (isGroup(getItemViewType(position))) {
-            val parent = item as RealItem.Parent
-            holder.itemView.setTag(
-                GROUP_INDEX_FLAG,
-                parent.groupPosition
-            )
-            performBindParentViewHolder(item, holder, payloads)
-        } else {
-            val child = item as RealItem.Child
-            holder.itemView.setTag(
-                GROUP_INDEX_FLAG,
-                child.groupPosition
-            )
-
-            holder.itemView.setTag(
-                CHILD_INDEX_FLAG,
-                item.childPosition
-            )
-            onBindChildViewHolder(
-                holder,
-                item.groupPosition,
-                item.childPosition,
-                payloads
-            )
-
-        }
         onBindViewHolder(holder, position)
+        val (groupPosition, childPosition) = getPositionInfo(position)
+        if (DEBUG) {
+            Log.d(LOG_TAG, "onBindViewHolder $tempPositionInfo")
+        }
+        if (childPosition == null) {
+            performBindParentViewHolder(groupPosition, holder, payloads)
+        } else {
+            onBindChildViewHolder(holder, groupPosition, childPosition, payloads)
+        }
     }
 
     private fun performBindParentViewHolder(
-        realItem: RealItem.Parent,
+        groupPosition: Int,
         holder: VH,
         payloads: List<Any>
     ) {
-        val expand = isExpand(realItem.groupPosition)
+        val expand = isExpand(groupPosition)
         if (payloads.isEmpty()) {
             holder.itemView.setOnClickListener {
-                if (isExpand(realItem.groupPosition)) {
-                    collapseGroup(realItem.groupPosition, enableAnimation)
+                if (isExpand(groupPosition)) {
+                    collapseGroup(groupPosition, enableAnimation)
                 } else {
-                    expandGroup(realItem.groupPosition, enableAnimation)
+                    expandGroup(groupPosition, enableAnimation)
                 }
             }
         }
-        onBindGroupViewHolder(
-            holder,
-            realItem.groupPosition,
-            expand,
-            payloads
-        )
-        for (payload in payloads) {
-            if (GROUP_EXPAND_CHANGE === payload) {
-                val itemAnimator = recyclerView?.itemAnimator
-                val animDuration = if (expand) {
-                    itemAnimator?.addDuration
-                } else {
-                    itemAnimator?.removeDuration
-                }
-                onGroupViewHolderExpandChange(
-                    holder,
-                    realItem.groupPosition,
-                    animDuration ?: 300,
-                    expand
-                )
-            }
+        onBindGroupViewHolder(holder, groupPosition, expand, payloads)
+        if (payloads.any { it == GROUP_EXPAND_CHANGE }) {
+            val animDuration =
+                recyclerView?.itemAnimator?.let { if (expand) it.addDuration else it.removeDuration }
+            onGroupViewHolderExpandChange(holder, groupPosition, animDuration ?: 300, expand)
         }
     }
 
@@ -337,13 +256,14 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         (state as? ExpandableState)?.expandState?.let {
             expandState.clear()
             expandState.putAll(it)
-            setDataInternal()
         }
     }
 
 
     /**
-     * 通知group布局刷新
+     *
+     * Notify any registered observers that the group item at <code>groupPosition</code> has changed with
+     * an optional payload object.
      *
      * @param groupPosition
      * @param payload
@@ -354,7 +274,8 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     }
 
     /**
-     * 通知子item局部刷新
+     * Notify any registered observers that the child item at <code>groupPosition,childPosition</code> has changed with
+     * an optional payload object.
      *
      * @param groupPosition
      * @param childPosition
@@ -366,33 +287,28 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         payload: Any? = null
     ) {
         if (isExpand(groupPosition)) {
-            notifyItemChanged(
-                getChildAdapterPosition(groupPosition, childPosition),
-                payload
-            )
+            notifyItemChanged(getChildAdapterPosition(groupPosition, childPosition), payload)
         }
     }
 
     fun notifyGroupInserted(groupPosition: Int) {
+        // FIXME: 2020/12/18 Not strict
         notifyItemInserted(getGroupAdapterPosition(groupPosition))
     }
 
     fun notifyGroupRangeInserted(range: IntRange) {
-        notifyItemRangeInserted(
-            getGroupAdapterPosition(range.first),
-            range.last - range.first
-        )
+        // FIXME: 2020/12/18 Not strict
+        notifyItemRangeInserted(getGroupAdapterPosition(range.first), range.last - range.first)
     }
 
     fun notifyGroupRemove(groupPosition: Int) {
+        // FIXME: 2020/12/18 Not strict
         notifyItemRemoved(getGroupAdapterPosition(groupPosition))
     }
 
     fun notifyGroupRangeRemove(range: IntRange) {
-        notifyItemRangeRemoved(
-            getGroupAdapterPosition(range.first),
-            range.last - range.first
-        )
+        // FIXME: 2020/12/18 Not strict
+        notifyItemRangeRemoved(getGroupAdapterPosition(range.first), range.last - range.first)
     }
 
     fun notifyChildInserted(groupPosition: Int, childPosition: Int) {
@@ -411,6 +327,7 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     }
 
     fun notifyGroupMove(fromGroupPosition: Int, toGroupPosition: Int) {
+        // FIXME: 2020/12/18 Not strict
         notifyItemMoved(
             getGroupAdapterPosition(fromGroupPosition),
             getGroupAdapterPosition(toGroupPosition)
@@ -442,14 +359,21 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
     }
 
     /**
-     * 清空展开状态，配合notifyDataSetChange使用
+     * Clear expand state ,working with notifyDataSetChange()
      */
     fun clearExpandState() {
         expandState.clear()
     }
 
     final override fun getItemCount(): Int {
-        return items.size
+        var itemCount = 0
+        for (g in 0 until getGroupCount()) {
+            itemCount++
+            if (isExpand(g)) {
+                itemCount += getChildCount(g)
+            }
+        }
+        return itemCount
     }
 
 
@@ -484,30 +408,54 @@ abstract class ExpandableAdapter<VH : ViewHolder>() :
         expand: Boolean
     )
 
-
     abstract fun getGroupCount(): Int
+
     abstract fun getChildCount(groupPosition: Int): Int
 
+    private fun getPositionInfo(adapterPosition: Int): PositionInfo {
+        tempPositionInfo.groupPosition = RecyclerView.NO_POSITION
+        tempPositionInfo.childPosition = null
+        var position = -1
+        A@ for (g in 0 until getGroupCount()) {
+            position++
+            if (position == adapterPosition) {
+                tempPositionInfo.groupPosition = g
+                tempPositionInfo.childPosition = null
+                break@A
+            }
+            if (!isExpand(g)) continue
+            for (c in 0 until getChildCount(g)) {
+                position++
+                if (position == adapterPosition) {
+                    tempPositionInfo.groupPosition = g
+                    tempPositionInfo.childPosition = c
+                    break@A
+                }
+            }
+        }
+        return tempPositionInfo
+    }
+
     /**
-     * 获取组index
      *
      * @param viewHolder
      * @return
      */
-    fun getGroupPosition(viewHolder: ViewHolder): Int =
-        viewHolder.itemView.getTag(GROUP_INDEX_FLAG)?.let { it as? Int }
-            ?: RecyclerView.NO_POSITION
+    fun getGroupPosition(viewHolder: ViewHolder): Int {
+        return getPositionInfo(viewHolder.adapterPosition).groupPosition
+    }
 
 
     /**
-     * 获取child index
+     *
      *
      * @param viewHolder
      * @return
      */
-    fun getChildPosition(viewHolder: ViewHolder): Int =
-        viewHolder.itemView.getTag(CHILD_INDEX_FLAG)?.let { it as? Int }
-            ?: RecyclerView.NO_POSITION
+    fun getChildPosition(viewHolder: ViewHolder): Int {
+        return getPositionInfo(viewHolder.adapterPosition).childPosition ?: RecyclerView.NO_POSITION
+    }
+
 
     class ExpandableState(var expandState: SparseBooleanArray?) : Parcelable {
 
