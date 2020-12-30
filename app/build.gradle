@@ -15,7 +15,7 @@ android {
     }
     defaultConfig {
         applicationId "pokercc.android.expandablerecyclerview.sample"
-        minSdkVersion 20
+        minSdkVersion Version.MIN_SDK_VERSION
 
         versionCode appVersion.versionCode
         versionName appVersion.versionName

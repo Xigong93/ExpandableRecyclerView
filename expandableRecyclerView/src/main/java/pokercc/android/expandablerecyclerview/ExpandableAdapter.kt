@@ -18,8 +18,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
  * @date 2019-6-2 11:38:13
  * */
 @UiThread
-abstract class ExpandableAdapter<VH : ViewHolder> :
-    RecyclerView.Adapter<VH>() {
+abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     companion object {
         @Suppress("MayBeConstant")
         var DEBUG = BuildConfig.DEBUG
@@ -63,7 +62,7 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
      * @param groupPosition
      * @return
      */
-    @Suppress("MemberVisibilityCanBePrivate", "MemberVisibilityCanBePrivate")
+    @Suppress("MemberVisibilityCanBePrivate")
     fun isExpand(groupPosition: Int): Boolean {
         return expandState[groupPosition]
     }
@@ -116,10 +115,8 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
             if (!isExpand(groupPosition)) {
                 setExpand(groupPosition, true)
                 if (anim) {
-                    notifyItemRangeInserted(
-                        getChildAdapterPosition(groupPosition, 0),
-                        getChildCount(groupPosition)
-                    )
+                    val adapterPosition = getChildAdapterPosition2(groupPosition, 0) ?: return
+                    notifyItemRangeInserted(adapterPosition, getChildCount(groupPosition))
                 } else {
                     notifyDataSetChanged()
                 }
@@ -131,10 +128,12 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
             for (i in 0 until getGroupCount()) {
                 if (i == groupPosition && !isExpand(i)) {
                     setExpand(i, true)
-                    notifyItemRangeInserted(getChildAdapterPosition(i, 0), getChildCount(i))
+                    val childAdapterPosition = getChildAdapterPosition2(i, 0) ?: 0
+                    notifyItemRangeInserted(childAdapterPosition, getChildCount(i))
                 } else if (isExpand(i)) {
+                    val childAdapterPosition = getChildAdapterPosition2(i, 0) ?: 0
                     setExpand(i, false)
-                    notifyItemRangeRemoved(getChildAdapterPosition(i, 0), getChildCount(i))
+                    notifyItemRangeRemoved(childAdapterPosition, getChildCount(i))
                 }
             }
         } else {
@@ -157,16 +156,13 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun collapseGroup(groupPosition: Int, anim: Boolean) {
-        if (isExpand(groupPosition)) {
-            setExpand(groupPosition, false)
-            if (anim) {
-                notifyItemRangeRemoved(
-                    getChildAdapterPosition(groupPosition, 0),
-                    getChildCount(groupPosition)
-                )
-            } else {
-                notifyDataSetChanged()
-            }
+        if (!isExpand(groupPosition)) return
+        val childAdapterPosition = getChildAdapterPosition2(groupPosition, 0) ?: return
+        setExpand(groupPosition, false)
+        if (anim) {
+            notifyItemRangeRemoved(childAdapterPosition, getChildCount(groupPosition))
+        } else {
+            notifyDataSetChanged()
         }
     }
 
@@ -183,8 +179,28 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
 
 
     @Suppress("MemberVisibilityCanBePrivate")
+    @Deprecated(
+        message = "Unclear return value",
+        replaceWith = ReplaceWith("getChildAdapterPosition2")
+    )
     fun getChildAdapterPosition(groupPosition: Int, childPosition: Int): Int {
-        return getGroupAdapterPosition(groupPosition) + 1 + childPosition
+        return if (!isExpand(groupPosition)) {
+            RecyclerView.NO_POSITION
+        } else {
+            getGroupAdapterPosition(groupPosition) + 1 + childPosition
+        }
+    }
+
+    /**
+     * Get special child adapter position,if the group is not expand return null.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun getChildAdapterPosition2(groupPosition: Int, childPosition: Int): Int? {
+        return if (!isExpand(groupPosition)) {
+            null
+        } else {
+            getGroupAdapterPosition(groupPosition) + 1 + childPosition
+        }
     }
 
     final override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): VH {
@@ -287,7 +303,8 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
         payload: Any? = null
     ) {
         if (isExpand(groupPosition)) {
-            notifyItemChanged(getChildAdapterPosition(groupPosition, childPosition), payload)
+            val adapterPosition = getChildAdapterPosition2(groupPosition, childPosition) ?: return
+            notifyItemChanged(adapterPosition, payload)
         }
     }
 
@@ -313,16 +330,15 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
 
     fun notifyChildInserted(groupPosition: Int, childPosition: Int) {
         if (isExpand(groupPosition)) {
-            notifyItemInserted(getChildAdapterPosition(groupPosition, childPosition))
+            val adapterPosition = getChildAdapterPosition2(groupPosition, childPosition) ?: return
+            notifyItemInserted(adapterPosition)
         }
     }
 
     fun notifyChildRangeInserted(groupPosition: Int, range: IntRange) {
         if (isExpand(groupPosition)) {
-            notifyItemRangeInserted(
-                getChildAdapterPosition(groupPosition, range.first),
-                range.last - range.first
-            )
+            val adapterPosition = getChildAdapterPosition2(groupPosition, range.first) ?: return
+            notifyItemRangeInserted(adapterPosition, range.last - range.first)
         }
     }
 
@@ -336,25 +352,23 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
 
     fun notifyChildMove(groupPosition: Int, fromChildPosition: Int, toChildPosition: Int) {
         if (isExpand(groupPosition)) {
-            notifyItemMoved(
-                getChildAdapterPosition(groupPosition, fromChildPosition),
-                getChildAdapterPosition(groupPosition, toChildPosition)
-            )
+            val startPosition = getChildAdapterPosition2(groupPosition, fromChildPosition)?:return
+            val endPosition = getChildAdapterPosition2(groupPosition, toChildPosition)?:return
+            notifyItemMoved(startPosition, endPosition)
         }
     }
 
     fun notifyChildRemove(groupPosition: Int, childPosition: Int) {
         if (isExpand(groupPosition)) {
-            notifyItemRemoved(getChildAdapterPosition(groupPosition, childPosition))
+            val adapterPosition = getChildAdapterPosition2(groupPosition, childPosition) ?: return
+            notifyItemRemoved(adapterPosition)
         }
     }
 
     fun notifyChildRangeRemove(groupPosition: Int, range: IntRange) {
         if (isExpand(groupPosition)) {
-            notifyItemRangeRemoved(
-                getChildAdapterPosition(groupPosition, range.first),
-                range.last - range.first
-            )
+            val adapterPosition = getChildAdapterPosition2(groupPosition, range.first) ?: return
+            notifyItemRangeRemoved(adapterPosition, range.last - range.first)
         }
     }
 
@@ -452,9 +466,16 @@ abstract class ExpandableAdapter<VH : ViewHolder> :
      * @param viewHolder
      * @return
      */
+    @Deprecated(message = "Unclear return value", replaceWith = ReplaceWith("getChildPosition2"))
     fun getChildPosition(viewHolder: ViewHolder): Int {
         return getPositionInfo(viewHolder.adapterPosition).childPosition ?: RecyclerView.NO_POSITION
     }
+
+    /**
+     * Get special viewHolder 's childPosition,if the viewHolder is group viewHolder return null.
+     */
+    fun getChildPosition2(viewHolder: ViewHolder): Int? =
+        getPositionInfo(viewHolder.adapterPosition).childPosition
 
 
     class ExpandableState(var expandState: SparseBooleanArray?) : Parcelable {
