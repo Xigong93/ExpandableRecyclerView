@@ -44,7 +44,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             require(adapter is ExpandableAdapter)
         }
         super.setAdapter(adapter)
-        if (adapter != null) {
+        if (adapter != null && itemAnimator !is ExpandableItemAnimator) {
             itemAnimator = ExpandableItemAnimator(this)
         }
     }
