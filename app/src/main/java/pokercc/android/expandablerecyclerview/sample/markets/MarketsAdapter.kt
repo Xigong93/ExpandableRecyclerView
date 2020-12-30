@@ -15,8 +15,8 @@ import pokercc.android.expandablerecyclerview.sample.databinding.MarketsChildIte
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsParentItemBinding
 import pokercc.android.expandablerecyclerview.sample.dpToPx
 
-class MarketChildVH(val binding: MarketsChildItemBinding) : RecyclerView.ViewHolder(binding.root)
-class MarketParentVH(val binding: MarketsParentItemBinding) : RecyclerView.ViewHolder(binding.root)
+class MarketChildVH(val binding: MarketsChildItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
+class MarketParentVH(val binding: MarketsParentItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
 
 private val names = listOf(
     "Nathaniel Fitzgerald",
@@ -26,11 +26,11 @@ private val names = listOf(
     "Johnny Marr"
 )
 
-class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
+class MarketsAdapter : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder = LayoutInflater.from(viewGroup.context)
+    ): ExpandableAdapter.ViewHolder = LayoutInflater.from(viewGroup.context)
         .let { MarketsParentItemBinding.inflate(it, viewGroup, false) }
         .let { MarketParentVH(it) }
 
@@ -38,12 +38,12 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder = LayoutInflater.from(viewGroup.context)
+    ): ExpandableAdapter.ViewHolder = LayoutInflater.from(viewGroup.context)
         .let { MarketsChildItemBinding.inflate(it, viewGroup, false) }
         .let { MarketChildVH(it) }
 
     override fun onBindChildViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         childPosition: Int,
         payloads: List<Any>
@@ -80,7 +80,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
     }
 
     override fun onBindGroupViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
@@ -98,7 +98,7 @@ class MarketsAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
     }
 
     override fun onGroupViewHolderExpandChange(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean

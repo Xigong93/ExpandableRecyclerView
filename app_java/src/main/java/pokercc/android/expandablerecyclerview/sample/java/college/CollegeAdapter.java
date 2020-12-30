@@ -15,7 +15,7 @@ import pokercc.android.expandablerecyclerview.sample.java.databinding.CollegeIte
 import pokercc.android.expandablerecyclerview.sample.java.databinding.FamousCollegeItemBinding;
 import pokercc.android.expandablerecyclerview.sample.java.databinding.ProvinceItemBinding;
 
-class ProvinceVH extends RecyclerView.ViewHolder {
+class ProvinceVH extends ExpandableAdapter.ViewHolder {
 
     public final ProvinceItemBinding itemBinding;
 
@@ -25,7 +25,7 @@ class ProvinceVH extends RecyclerView.ViewHolder {
     }
 }
 
-class CityVH extends RecyclerView.ViewHolder {
+class CityVH extends ExpandableAdapter.ViewHolder {
 
     public final CityItemBinding itemBinding;
 
@@ -35,7 +35,7 @@ class CityVH extends RecyclerView.ViewHolder {
     }
 }
 
-class CollegeVH extends RecyclerView.ViewHolder {
+class CollegeVH extends ExpandableAdapter.ViewHolder {
 
     public final CollegeItemBinding itemBinding;
 
@@ -45,7 +45,7 @@ class CollegeVH extends RecyclerView.ViewHolder {
     }
 }
 
-class FamousCollegeVH extends RecyclerView.ViewHolder {
+class FamousCollegeVH extends ExpandableAdapter.ViewHolder {
 
     public final FamousCollegeItemBinding itemBinding;
 
@@ -55,7 +55,7 @@ class FamousCollegeVH extends RecyclerView.ViewHolder {
     }
 }
 
-class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
+class CollegeAdapter extends ExpandableAdapter<ExpandableAdapter.ViewHolder> {
     private static final int CITY_ITEM = 12;
     private static final int COLLEGE_ITEM = -1;
     private static final int PROVINCE_ITEM = 11;
@@ -71,7 +71,7 @@ class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
 
 
     @Override
-    protected RecyclerView.ViewHolder onCreateGroupViewHolder(ViewGroup viewGroup, int viewType) {
+    protected ExpandableAdapter.ViewHolder onCreateGroupViewHolder(ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         if (viewType == PROVINCE_ITEM) {
             ProvinceItemBinding itemBinding = ProvinceItemBinding.inflate(inflater, viewGroup, false);
@@ -85,7 +85,7 @@ class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
 
 
     @Override
-    protected RecyclerView.ViewHolder onCreateChildViewHolder(ViewGroup viewGroup, int viewType) {
+    protected ExpandableAdapter.ViewHolder onCreateChildViewHolder(ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         if (viewType == FAMOUS_COLLEGE__ITEM) {
             FamousCollegeItemBinding itemBinding = FamousCollegeItemBinding.inflate(inflater, viewGroup, false);
@@ -132,7 +132,7 @@ class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    protected void onBindChildViewHolder(RecyclerView.ViewHolder holder, int groupPosition, int childPosition, List<?> payloads) {
+    protected void onBindChildViewHolder(ExpandableAdapter.ViewHolder holder, int groupPosition, int childPosition, List<?> payloads) {
         College college = data.get(groupPosition).colleges.get(childPosition);
         if (payloads.isEmpty()) {
             if (holder instanceof CollegeVH) {
@@ -146,7 +146,7 @@ class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    protected void onBindGroupViewHolder(RecyclerView.ViewHolder holder, int groupPosition, boolean expand, List<?> payloads) {
+    protected void onBindGroupViewHolder(ExpandableAdapter.ViewHolder holder, int groupPosition, boolean expand, List<?> payloads) {
         CollegeZone collegeZone = data.get(groupPosition);
         if (payloads.isEmpty()) {// 判断一下是不是首次绑定
             if (holder instanceof ProvinceVH) {
@@ -161,7 +161,7 @@ class CollegeAdapter extends ExpandableAdapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    protected void onGroupViewHolderExpandChange(RecyclerView.ViewHolder holder, int groupPosition, long animDuration, boolean expand) {
+    protected void onGroupViewHolderExpandChange(ExpandableAdapter.ViewHolder holder, int groupPosition, long animDuration, boolean expand) {
         View arrowImage;
         if (holder instanceof ProvinceVH) {
             arrowImage = ((ProvinceVH) holder).itemBinding.arrowImage;

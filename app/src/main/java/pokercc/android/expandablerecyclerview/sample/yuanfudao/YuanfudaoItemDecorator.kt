@@ -51,7 +51,7 @@ internal class YuanfudaoItemDecorator : RecyclerView.ItemDecoration() {
         c: Canvas
     ) {
         val viewHolder = parent.getChildViewHolder(view)
-        val groupPosition = expandableAdapter.getGroupPosition(viewHolder)
+        val groupPosition = expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
         if (expandableAdapter.isGroup(viewHolder.itemViewType)) {
             // 绘制group装饰器
             val groupViewHolder = viewHolder as? YuanfudaoGroupViewHolder ?: return
@@ -105,7 +105,7 @@ internal class YuanfudaoItemDecorator : RecyclerView.ItemDecoration() {
             val radius = 6.dpToPx(parent.context)
             c.drawCircle(cx, cy, radius, circlePaint)
             // 绘制线
-            val childPosition = expandableAdapter.getChildPosition(childViewHolder)
+            val childPosition = expandableAdapter.getItemLayoutPosition(childViewHolder).childPosition
             val childCount = expandableAdapter.getChildCount(groupPosition)
             if (childPosition != childCount - 1) {
                 c.drawLine(

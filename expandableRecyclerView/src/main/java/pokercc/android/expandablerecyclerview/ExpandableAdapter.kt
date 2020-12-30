@@ -1,16 +1,19 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package pokercc.android.expandablerecyclerview
 
+import android.os.Looper
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
 import android.util.SparseBooleanArray
+import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.CallSuper
 import androidx.annotation.UiThread
 import androidx.core.util.putAll
 import androidx.core.util.set
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 /**
  * ExpandableAdapter working with ExpandableRecyclerView
@@ -18,7 +21,7 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
  * @date 2019-6-2 11:38:13
  * */
 @UiThread
-abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
+abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerView.Adapter<VH>() {
     companion object {
         @Suppress("MayBeConstant")
         var DEBUG = BuildConfig.DEBUG
@@ -26,19 +29,18 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         private val GROUP_EXPAND_CHANGE = Any()
     }
 
-    private data class PositionInfo(
-        var groupPosition: Int,
-        var childPosition: Int?
-    )
+    open class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        internal lateinit var layoutItemPosition: ItemPosition
+    }
 
-    private val tempPositionInfo = PositionInfo(0, null)
+    data class ItemPosition(var groupPosition: Int, var childPosition: Int?)
+
+    private val tempItemPosition = ItemPosition(0, null)
 
     private val expandState = SparseBooleanArray()
 
-    @Suppress("MemberVisibilityCanBePrivate")
     var onlyOneGroupExpand = false
 
-    @Suppress("MemberVisibilityCanBePrivate")
     var enableAnimation = true
 
     private var recyclerView: RecyclerView? = null
@@ -62,8 +64,11 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
      * @param groupPosition
      * @return
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun isExpand(groupPosition: Int): Boolean {
+        val groupCount = getGroupCount()
+        require(groupPosition in 0 until groupCount) {
+            "$groupPosition must in 0 until $groupCount"
+        }
         return expandState[groupPosition]
     }
 
@@ -109,8 +114,11 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
      * @param groupPosition
      * @param anim
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun expandGroup(groupPosition: Int, anim: Boolean) {
+        val groupCount = getGroupCount()
+        require(groupPosition in 0 until groupCount) {
+            "$groupPosition must in 0 until $groupCount"
+        }
         if (!onlyOneGroupExpand) {
             if (!isExpand(groupPosition)) {
                 setExpand(groupPosition, true)
@@ -154,8 +162,11 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
      * @param groupPosition
      * @param anim
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun collapseGroup(groupPosition: Int, anim: Boolean) {
+        val groupCount = getGroupCount()
+        require(groupPosition in 0 until groupCount) {
+            "$groupPosition must in 0 until $groupCount"
+        }
         if (!isExpand(groupPosition)) return
         val childAdapterPosition = getChildAdapterPosition2(groupPosition, 0) ?: return
         setExpand(groupPosition, false)
@@ -166,8 +177,12 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         }
     }
 
-    @Suppress("MemberVisibilityCanBePrivate")
+
     fun getGroupAdapterPosition(groupPosition: Int): Int {
+        val groupCount = getGroupCount()
+        require(groupPosition in 0 until groupCount) {
+            "$groupPosition must in 0 until $groupCount"
+        }
         var position = groupPosition
         for (i in 0 until groupPosition) {
             if (isExpand(i)) {
@@ -178,27 +193,25 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     }
 
 
-    @Suppress("MemberVisibilityCanBePrivate")
     @Deprecated(
         message = "Unclear return value",
         replaceWith = ReplaceWith("getChildAdapterPosition2")
     )
     fun getChildAdapterPosition(groupPosition: Int, childPosition: Int): Int {
-        return if (!isExpand(groupPosition)) {
-            RecyclerView.NO_POSITION
-        } else {
-            getGroupAdapterPosition(groupPosition) + 1 + childPosition
-        }
+        return getChildAdapterPosition2(groupPosition, childPosition) ?: RecyclerView.NO_POSITION
     }
 
     /**
      * Get special child adapter position,if the group is not expand return null.
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun getChildAdapterPosition2(groupPosition: Int, childPosition: Int): Int? {
         return if (!isExpand(groupPosition)) {
             null
         } else {
+            val childCount = getChildCount(groupPosition)
+            require(childPosition in 0 until childCount) {
+                "$childPosition must in 0 until $$childCount"
+            }
             getGroupAdapterPosition(groupPosition) + 1 + childPosition
         }
     }
@@ -212,7 +225,10 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     }
 
     final override fun getItemViewType(position: Int): Int {
-        val (groupPosition, childPosition) = getPositionInfo(position)
+        require(position in 0 until itemCount) {
+            "$position must in 0 unit $itemCount"
+        }
+        val (groupPosition, childPosition) = getItemAdapterPosition(position)
         return if (childPosition == null) {
             getGroupItemViewType(groupPosition)
         } else {
@@ -229,11 +245,12 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
     final override fun onBindViewHolder(viewHolder: VH, position: Int) = Unit
 
     final override fun onBindViewHolder(holder: VH, position: Int, payloads: MutableList<Any>) {
-        onBindViewHolder(holder, position)
-        val (groupPosition, childPosition) = getPositionInfo(position)
+        val itemPosition = getItemAdapterPosition(position)
+        holder.layoutItemPosition = itemPosition.copy()
         if (DEBUG) {
-            Log.d(LOG_TAG, "onBindViewHolder $tempPositionInfo")
+            Log.d(LOG_TAG, "onBindViewHolder $tempItemPosition")
         }
+        val (groupPosition, childPosition) = itemPosition
         if (childPosition == null) {
             performBindParentViewHolder(groupPosition, holder, payloads)
         } else {
@@ -284,7 +301,6 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
      * @param groupPosition
      * @param payload
      */
-    @Suppress("MemberVisibilityCanBePrivate")
     fun notifyGroupChange(groupPosition: Int, payload: Any? = null) {
         notifyItemChanged(getGroupAdapterPosition(groupPosition), payload)
     }
@@ -352,8 +368,8 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
 
     fun notifyChildMove(groupPosition: Int, fromChildPosition: Int, toChildPosition: Int) {
         if (isExpand(groupPosition)) {
-            val startPosition = getChildAdapterPosition2(groupPosition, fromChildPosition)?:return
-            val endPosition = getChildAdapterPosition2(groupPosition, toChildPosition)?:return
+            val startPosition = getChildAdapterPosition2(groupPosition, fromChildPosition) ?: return
+            val endPosition = getChildAdapterPosition2(groupPosition, toChildPosition) ?: return
             notifyItemMoved(startPosition, endPosition)
         }
     }
@@ -426,39 +442,46 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
 
     abstract fun getChildCount(groupPosition: Int): Int
 
-    private fun getPositionInfo(adapterPosition: Int): PositionInfo {
-        tempPositionInfo.groupPosition = RecyclerView.NO_POSITION
-        tempPositionInfo.childPosition = null
+    fun getItemLayoutPosition(viewHolder: RecyclerView.ViewHolder): ItemPosition =
+        (viewHolder as ViewHolder).layoutItemPosition
+
+    fun getItemAdapterPosition(viewHolder: RecyclerView.ViewHolder): ItemPosition? {
+        return if (viewHolder.adapterPosition == RecyclerView.NO_POSITION) {
+            null
+        } else {
+            getItemAdapterPosition(viewHolder.adapterPosition)
+        }
+    }
+
+    fun getItemAdapterPosition(adapterPosition: Int): ItemPosition {
+        require(Looper.myLooper() == Looper.getMainLooper()) {
+            "Must run on ui thread"
+        }
+        require(adapterPosition in 0 until itemCount) {
+            "$adapterPosition must in 0 unit $itemCount"
+        }
+        tempItemPosition.groupPosition = RecyclerView.NO_POSITION
+        tempItemPosition.childPosition = null
         var position = -1
         A@ for (g in 0 until getGroupCount()) {
             position++
             if (position == adapterPosition) {
-                tempPositionInfo.groupPosition = g
-                tempPositionInfo.childPosition = null
+                tempItemPosition.groupPosition = g
+                tempItemPosition.childPosition = null
                 break@A
             }
             if (!isExpand(g)) continue
             for (c in 0 until getChildCount(g)) {
                 position++
                 if (position == adapterPosition) {
-                    tempPositionInfo.groupPosition = g
-                    tempPositionInfo.childPosition = c
+                    tempItemPosition.groupPosition = g
+                    tempItemPosition.childPosition = c
                     break@A
                 }
             }
         }
-        return tempPositionInfo
+        return tempItemPosition
     }
-
-    /**
-     *
-     * @param viewHolder
-     * @return
-     */
-    fun getGroupPosition(viewHolder: ViewHolder): Int {
-        return getPositionInfo(viewHolder.adapterPosition).groupPosition
-    }
-
 
     /**
      *
@@ -466,17 +489,28 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
      * @param viewHolder
      * @return
      */
-    @Deprecated(message = "Unclear return value", replaceWith = ReplaceWith("getChildPosition2"))
-    fun getChildPosition(viewHolder: ViewHolder): Int {
-        return getPositionInfo(viewHolder.adapterPosition).childPosition ?: RecyclerView.NO_POSITION
+    @Deprecated(
+        message = "Mix adapterPosition and layoutPosition",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("getItemAdapterPosition() or getItemLayoutPosition()")
+    )
+    fun getChildPosition(viewHolder: RecyclerView.ViewHolder): Int {
+        return getItemAdapterPosition(viewHolder)?.childPosition ?: RecyclerView.NO_POSITION
     }
 
     /**
-     * Get special viewHolder 's childPosition,if the viewHolder is group viewHolder return null.
+     *
+     * @param viewHolder
+     * @return
      */
-    fun getChildPosition2(viewHolder: ViewHolder): Int? =
-        getPositionInfo(viewHolder.adapterPosition).childPosition
-
+    @Deprecated(
+        message = "Mix adapterPosition and layoutPosition",
+        level = DeprecationLevel.ERROR,
+        replaceWith = ReplaceWith("getItemAdapterPosition() or getItemLayoutPosition()")
+    )
+    fun getGroupPosition(viewHolder: RecyclerView.ViewHolder): Int {
+        return getItemAdapterPosition(viewHolder)?.groupPosition ?: RecyclerView.NO_POSITION
+    }
 
     class ExpandableState(var expandState: SparseBooleanArray?) : Parcelable {
 
@@ -499,3 +533,4 @@ abstract class ExpandableAdapter<VH : ViewHolder> : RecyclerView.Adapter<VH>() {
         }
     }
 }
+

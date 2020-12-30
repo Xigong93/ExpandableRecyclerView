@@ -158,13 +158,13 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
     /**
      * 这个组接触到了RecyclerView的底部
      */
-    private fun groupReachRecyclerViewBottom(groupPosition: Int): Boolean {
+    private fun groupReachParentBottom(groupPosition: Int): Boolean {
         var maxChildBottom = 0f
         for (i in 0 until expandableRecyclerView.childCount) {
             val view = expandableRecyclerView.getChildAt(i)
             val viewHolder = expandableRecyclerView.getChildViewHolder(view)
             if (expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            val viewGroupPosition = expandableAdapter.getGroupPosition(viewHolder)
+            val viewGroupPosition = expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
             if (viewGroupPosition != groupPosition) continue
             maxChildBottom = max(maxChildBottom, view.y + view.height)
         }
@@ -184,7 +184,7 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
             val view = expandableRecyclerView.getChildAt(i)
             val viewHolder = expandableRecyclerView.getChildViewHolder(view)
             if (expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            val viewGroupPosition = expandableAdapter.getGroupPosition(viewHolder)
+            val viewGroupPosition = expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
             if (viewGroupPosition != groupPosition) continue
             val targetY = if (groupViewHolder != null) {
                 val bottomDecorationHeight =
@@ -201,12 +201,12 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
 
     @Suppress("MemberVisibilityCanBePrivate")
     open fun animateRemoveImpl(holder: ViewHolder) {
-        val groupPosition = expandableAdapter.getGroupPosition(holder)
+        val (groupPosition, _) = expandableAdapter.getItemLayoutPosition(holder)
         val view = holder.itemView
         val animation = view.animate()
         mRemoveAnimations.add(holder)
         val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
-        if ((animChildrenItem || (isLastGroup && !groupReachRecyclerViewBottom(groupPosition)))
+        if ((animChildrenItem || (isLastGroup && !groupReachParentBottom(groupPosition)))
             && !expandableAdapter.isGroup(holder.itemViewType)
         ) {
             // 最后一组的执行一个展开动画，其他的不执行动画
@@ -216,7 +216,7 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
             } else {
                 getGroupMaxTranslateY(groupPosition) * animValue
             }
-            animation.translationY(-maxTranslateY.toFloat())
+            animation.translationY(-maxTranslateY)
                 .setDuration(removeDuration)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animator: Animator) {
@@ -260,7 +260,7 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
         val view = holder.itemView
         resetAnimation(holder)
         mPendingAdditions.add(holder)
-        val groupPosition = expandableAdapter.getGroupPosition(holder)
+        val groupPosition = expandableAdapter.getItemLayoutPosition(holder).groupPosition
         val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
         if ((isLastGroup || animChildrenItem) && !expandableAdapter.isGroup(holder.itemViewType)) {
             val maxTranslateY = if (isLastGroup) {
@@ -282,7 +282,7 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
         val animation = view.animate()
         mAddAnimations.add(holder)
         view.alpha = 1f
-        val groupPosition = expandableAdapter.getGroupPosition(holder)
+        val groupPosition = expandableAdapter.getItemLayoutPosition(holder).groupPosition
         val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
         if ((isLastGroup || animChildrenItem) && !expandableAdapter.isGroup(holder.itemViewType)) {
             // 最后一组的执行一个展开动画，其他的不执行动画

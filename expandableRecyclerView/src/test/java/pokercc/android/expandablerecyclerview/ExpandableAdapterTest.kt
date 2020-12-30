@@ -14,27 +14,24 @@ class ExpandableAdapterTest {
     @Before
     fun setUp() {
         adapter = spy(TestExpandableAdapter())
+        doReturn(3).`when`(adapter).getGroupCount()
+        doReturn(2).`when`(adapter).getChildCount(anyInt())
     }
 
     @Test
     fun testGetCount() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
+
         assertThat(adapter.itemCount).isEqualTo(3)
     }
 
     @Test
     fun testExpand() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         adapter.expandGroup(0, false)
         assertThat(adapter.itemCount).isEqualTo(5)
     }
 
     @Test
     fun testIsExpand() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         adapter.expandGroup(0, false)
         assertThat(adapter.isExpand(0)).isTrue()
         assertThat(adapter.isExpand(1)).isFalse()
@@ -42,8 +39,6 @@ class ExpandableAdapterTest {
 
     @Test
     fun testCollapse() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         adapter.expandGroup(0, false)
         adapter.collapseGroup(0, false)
         assertThat(adapter.itemCount).isEqualTo(3)
@@ -51,16 +46,12 @@ class ExpandableAdapterTest {
 
     @Test
     fun testExpandAll() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         adapter.expandAllGroup()
         assertThat(adapter.itemCount).isEqualTo(9)
     }
 
     @Test
     fun testCollapseAll() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         adapter.expandAllGroup()
         adapter.collapseAllGroup()
         assertThat(adapter.itemCount).isEqualTo(3)
@@ -68,8 +59,6 @@ class ExpandableAdapterTest {
 
     @Test
     fun testOnlyExpandOneGroup() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         // Only one group expand  is false
         adapter.onlyOneGroupExpand = false
         adapter.expandGroup(0, false)
@@ -85,17 +74,71 @@ class ExpandableAdapterTest {
 
     @Test
     fun testGetGroupAdapterPosition() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
         assertThat(adapter.getGroupAdapterPosition(1)).isEqualTo(1)
         assertThat(adapter.getGroupAdapterPosition(2)).isEqualTo(2)
     }
 
     @Test
     fun testGetChildAdapterPosition() {
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
-        assertThat(adapter.getChildAdapterPosition(0,0)).isEqualTo(1)
-        assertThat(adapter.getChildAdapterPosition(1,0)).isEqualTo(2)
+        assertThat(adapter.getChildAdapterPosition(0, 0)).isEqualTo(-1)
+        assertThat(adapter.getChildAdapterPosition2(0, 0)).isNull()
+        adapter.expandGroup(0, false)
+        assertThat(adapter.getChildAdapterPosition(0, 0)).isEqualTo(1)
+        assertThat(adapter.getChildAdapterPosition2(0, 0)).isEqualTo(1)
     }
+
+    @Test
+    fun testGetItemAdapterPosition() {
+        // Collapse
+        for (i in 0 until 3) {
+            adapter.getItemAdapterPosition(i).apply {
+                assertThat(groupPosition).isEqualTo(i)
+                assertThat(childPosition).isNull()
+            }
+        }
+        // Expand all
+        adapter.expandAllGroup()
+        for (i in 0 until 3) {
+            adapter.getItemAdapterPosition(adapter.getGroupAdapterPosition(i)).apply {
+                assertThat(groupPosition).isEqualTo(i)
+                assertThat(childPosition).isNull()
+            }
+        }
+        for (i in 0 until 3) {
+            for (j in 0 until 2) {
+                adapter.getItemAdapterPosition(adapter.getChildAdapterPosition2(i, j)!!).apply {
+                    assertThat(groupPosition).isEqualTo(i)
+                    assertThat(childPosition).isEqualTo(j)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun testGetItemLayoutPosition() {
+        // Collapse
+        for (i in 0 until 3) {
+            adapter.getItemAdapterPosition(i).apply {
+                assertThat(groupPosition).isEqualTo(i)
+                assertThat(childPosition).isNull()
+            }
+        }
+        // Expand all
+        adapter.expandAllGroup()
+        for (i in 0 until 3) {
+            adapter.getItemAdapterPosition(adapter.getGroupAdapterPosition(i)).apply {
+                assertThat(groupPosition).isEqualTo(i)
+                assertThat(childPosition).isNull()
+            }
+        }
+        for (i in 0 until 3) {
+            for (j in 0 until 2) {
+                adapter.getItemAdapterPosition(adapter.getChildAdapterPosition2(i, j)!!).apply {
+                    assertThat(groupPosition).isEqualTo(i)
+                    assertThat(childPosition).isEqualTo(j)
+                }
+            }
+        }
+    }
+
 }

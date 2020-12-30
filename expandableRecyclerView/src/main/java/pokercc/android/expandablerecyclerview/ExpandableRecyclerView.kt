@@ -8,7 +8,6 @@ import android.os.Parcelable
 import android.os.Parcelable.ClassLoaderCreator
 import android.util.AttributeSet
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import androidx.core.view.children
 import androidx.customview.view.AbsSavedState
@@ -70,25 +69,25 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
      */
     @Suppress("MemberVisibilityCanBePrivate")
     fun <T> clipAndDrawChild(canvas: Canvas, child: View, drawAction: (Canvas) -> T): T {
-        val childViewHolder = getChildViewHolder(child)
+        val holder = getChildViewHolder(child)
         // Ignore group
-        if (!isAnimating || requireAdapter().isGroup(childViewHolder.itemViewType)) {
+        val layoutManager = layoutManager
+        if (layoutManager == null || !isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
             return drawAction(canvas)
         }
-        val layoutManager = layoutManager ?: return drawAction(canvas)
-        val childGroupPosition = requireAdapter().getGroupPosition(childViewHolder)
+        val (groupPosition, _) = requireAdapter().getItemLayoutPosition(holder)
         // Child must draw between it's group and next group.
-        val groupView = findGroupViewHolder(childGroupPosition)?.itemView
+        val groupView = findGroupViewHolder(groupPosition)?.itemView
         val groupViewBottom =
             groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
-        val nextGroupView = findGroupViewHolder(childGroupPosition + 1)?.itemView
+        val nextGroupView = findGroupViewHolder(groupPosition + 1)?.itemView
         val bottom = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
             ?: height.toFloat()
         if (DEBUG) {
-            val childPosition = requireAdapter().getChildPosition(childViewHolder)
+            val itemPosition = requireAdapter().getItemLayoutPosition(holder)
             Log.d(
                 LOG_TAG,
-                "group:${childGroupPosition},child:$childPosition,top:$groupViewBottom,bottom:${bottom}"
+                "itemPosition:${itemPosition},top:$groupViewBottom,bottom:${bottom},viewHolder:$holder"
             )
         }
         // Clip
@@ -129,7 +128,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
 
     private fun childContain(child: ViewHolder, x: Float, y: Float): Boolean {
         val layoutManager = layoutManager ?: return false
-        val childGroupPosition = requireAdapter().getGroupPosition(child)
+        val childGroupPosition = requireAdapter().getItemLayoutPosition(child).groupPosition
         val groupView = findGroupViewHolder(childGroupPosition)?.itemView
         val groupBottom =
             groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) }
@@ -145,11 +144,10 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
 
     @Suppress("MemberVisibilityCanBePrivate")
     fun findGroupViewHolder(groupPosition: Int): ViewHolder? {
-        val expandableAdapter = adapter as? ExpandableAdapter<*> ?: return null
         for (child in children) {
             val viewHolder = getChildViewHolder(child)
-            if (!expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            if (groupPosition == expandableAdapter.getGroupPosition(viewHolder)) {
+            if (!requireAdapter().isGroup(viewHolder.itemViewType)) continue
+            if (groupPosition == requireAdapter().getItemLayoutPosition(viewHolder).groupPosition) {
                 return viewHolder
             }
         }
