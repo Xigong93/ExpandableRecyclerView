@@ -1,55 +1,54 @@
 package pokercc.android.expandablerecyclerview
 
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+import android.widget.TextView
 
-open class TestExpandableAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
+class TestViewHolder(itemView: View) : ExpandableAdapter.ViewHolder(itemView)
+
+open class DemoExpandableAdapter(
+    private val groupCount: Int = 3,
+    private val childCount: Int = 2
+) : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder {
-        TODO("Not yet implemented")
+    ): ViewHolder {
+        return TestViewHolder(TextView(viewGroup.context))
     }
 
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder {
-        TODO("Not yet implemented")
+    ): ViewHolder {
+        return TestViewHolder(TextView(viewGroup.context))
     }
 
     override fun onBindChildViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ViewHolder,
         groupPosition: Int,
         childPosition: Int,
         payloads: List<Any>
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun onBindGroupViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ViewHolder,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun onGroupViewHolderExpandChange(
-        holder: RecyclerView.ViewHolder,
+        holder: ViewHolder,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean
     ) {
-        TODO("Not yet implemented")
     }
 
-    override fun getGroupCount(): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getGroupCount(): Int = groupCount
 
-    override fun getChildCount(groupPosition: Int): Int {
-        TODO("Not yet implemented")
-    }
+    override fun getChildCount(groupPosition: Int): Int = childCount
 }

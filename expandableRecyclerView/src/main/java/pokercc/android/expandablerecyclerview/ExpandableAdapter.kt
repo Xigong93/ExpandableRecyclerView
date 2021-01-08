@@ -495,7 +495,7 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
         replaceWith = ReplaceWith("getItemAdapterPosition() or getItemLayoutPosition()")
     )
     fun getChildPosition(viewHolder: RecyclerView.ViewHolder): Int {
-        return getItemAdapterPosition(viewHolder)?.childPosition ?: RecyclerView.NO_POSITION
+        return getItemLayoutPosition(viewHolder).childPosition ?: RecyclerView.NO_POSITION
     }
 
     /**
@@ -509,7 +509,7 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
         replaceWith = ReplaceWith("getItemAdapterPosition() or getItemLayoutPosition()")
     )
     fun getGroupPosition(viewHolder: RecyclerView.ViewHolder): Int {
-        return getItemAdapterPosition(viewHolder)?.groupPosition ?: RecyclerView.NO_POSITION
+        return getItemLayoutPosition(viewHolder).groupPosition
     }
 
     class ExpandableState(var expandState: SparseBooleanArray?) : Parcelable {

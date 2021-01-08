@@ -1,26 +1,24 @@
 package pokercc.android.expandablerecyclerview
 
+import androidx.test.annotation.UiThreadTest
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.*
-import org.robolectric.RobolectricTestRunner
 
-@RunWith(RobolectricTestRunner::class)
-class ExpandableAdapterTest {
+@RunWith(AndroidJUnit4::class)
+class DemoExpandableAdapterTest {
+
     private lateinit var adapter: ExpandableAdapter<*>
 
     @Before
     fun setUp() {
-        adapter = spy(TestExpandableAdapter())
-        doReturn(3).`when`(adapter).getGroupCount()
-        doReturn(2).`when`(adapter).getChildCount(anyInt())
+        adapter = DemoExpandableAdapter()
     }
 
     @Test
     fun testGetCount() {
-
         assertThat(adapter.itemCount).isEqualTo(3)
     }
 
@@ -88,6 +86,7 @@ class ExpandableAdapterTest {
     }
 
     @Test
+    @UiThreadTest
     fun testGetItemAdapterPosition() {
         // Collapse
         for (i in 0 until 3) {
@@ -114,31 +113,5 @@ class ExpandableAdapterTest {
         }
     }
 
-    @Test
-    fun testGetItemLayoutPosition() {
-        // Collapse
-        for (i in 0 until 3) {
-            adapter.getItemAdapterPosition(i).apply {
-                assertThat(groupPosition).isEqualTo(i)
-                assertThat(childPosition).isNull()
-            }
-        }
-        // Expand all
-        adapter.expandAllGroup()
-        for (i in 0 until 3) {
-            adapter.getItemAdapterPosition(adapter.getGroupAdapterPosition(i)).apply {
-                assertThat(groupPosition).isEqualTo(i)
-                assertThat(childPosition).isNull()
-            }
-        }
-        for (i in 0 until 3) {
-            for (j in 0 until 2) {
-                adapter.getItemAdapterPosition(adapter.getChildAdapterPosition2(i, j)!!).apply {
-                    assertThat(groupPosition).isEqualTo(i)
-                    assertThat(childPosition).isEqualTo(j)
-                }
-            }
-        }
-    }
 
 }
