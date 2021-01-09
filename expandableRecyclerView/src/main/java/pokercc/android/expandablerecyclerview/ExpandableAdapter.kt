@@ -123,8 +123,8 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
             if (!isExpand(groupPosition)) {
                 setExpand(groupPosition, true)
                 if (anim) {
-                    val adapterPosition = getChildAdapterPosition2(groupPosition, 0) ?: return
-                    notifyItemRangeInserted(adapterPosition, getChildCount(groupPosition))
+                    val position = getChildAdapterPosition2(groupPosition, 0)
+                    position?.let { notifyItemRangeInserted(it, getChildCount(groupPosition)) }
                 } else {
                     notifyDataSetChanged()
                 }
@@ -136,12 +136,12 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
             for (i in 0 until getGroupCount()) {
                 if (i == groupPosition && !isExpand(i)) {
                     setExpand(i, true)
-                    val childAdapterPosition = getChildAdapterPosition2(i, 0) ?: 0
-                    notifyItemRangeInserted(childAdapterPosition, getChildCount(i))
+                    val position = getChildAdapterPosition2(i, 0)
+                    position?.let { notifyItemRangeInserted(it, getChildCount(i)) }
                 } else if (isExpand(i)) {
-                    val childAdapterPosition = getChildAdapterPosition2(i, 0) ?: 0
+                    val position = getChildAdapterPosition2(i, 0)
                     setExpand(i, false)
-                    notifyItemRangeRemoved(childAdapterPosition, getChildCount(i))
+                    position?.let { notifyItemRangeRemoved(it, getChildCount(i)) }
                 }
             }
         } else {
@@ -168,10 +168,10 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
             "$groupPosition must in 0 until $groupCount"
         }
         if (!isExpand(groupPosition)) return
-        val childAdapterPosition = getChildAdapterPosition2(groupPosition, 0) ?: return
+        val position = getChildAdapterPosition2(groupPosition, 0)
         setExpand(groupPosition, false)
         if (anim) {
-            notifyItemRangeRemoved(childAdapterPosition, getChildCount(groupPosition))
+            position?.let { notifyItemRangeRemoved(it, getChildCount(groupPosition)) }
         } else {
             notifyDataSetChanged()
         }
@@ -202,15 +202,15 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
     }
 
     /**
-     * Get special child adapter position,if the group is not expand return null.
+     * Get special child adapter position,if the group is not expand or is empty return null.
      */
     fun getChildAdapterPosition2(groupPosition: Int, childPosition: Int): Int? {
-        return if (!isExpand(groupPosition)) {
+        val childCount = getChildCount(groupPosition)
+        return if (!isExpand(groupPosition) || childCount <= 0) {
             null
         } else {
-            val childCount = getChildCount(groupPosition)
             require(childPosition in 0 until childCount) {
-                "$childPosition must in 0 until $$childCount"
+                "$childPosition must in 0 until $childCount"
             }
             getGroupAdapterPosition(groupPosition) + 1 + childPosition
         }
