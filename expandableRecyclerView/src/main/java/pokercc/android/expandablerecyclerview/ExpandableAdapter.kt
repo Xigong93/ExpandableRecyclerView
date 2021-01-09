@@ -491,7 +491,6 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
      */
     @Deprecated(
         message = "Mix adapterPosition and layoutPosition",
-        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("getItemAdapterPosition() or getItemLayoutPosition()")
     )
     fun getChildPosition(viewHolder: RecyclerView.ViewHolder): Int {
@@ -505,7 +504,6 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
      */
     @Deprecated(
         message = "Mix adapterPosition and layoutPosition",
-        level = DeprecationLevel.ERROR,
         replaceWith = ReplaceWith("getItemAdapterPosition() or getItemLayoutPosition()")
     )
     fun getGroupPosition(viewHolder: RecyclerView.ViewHolder): Int {
