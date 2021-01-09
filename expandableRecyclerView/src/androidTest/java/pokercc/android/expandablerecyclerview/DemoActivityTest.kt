@@ -11,8 +11,8 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-@RunWith(AndroidJUnit4::class)
 @SmallTest
+@RunWith(AndroidJUnit4::class)
 class DemoActivityTest {
     @get:Rule
     val activityRule = ActivityScenarioRule(DemoActivity::class.java)
