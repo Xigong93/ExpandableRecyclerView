@@ -37,8 +37,8 @@ class StickyHeaderRecyclerViewContainer @JvmOverloads constructor(
     override fun onGroupShow(
         offset: Float,
         recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder,
-        expandableAdapter: ExpandableAdapter<RecyclerView.ViewHolder>
+        viewHolder: ExpandableAdapter.ViewHolder,
+        expandableAdapter: ExpandableAdapter<ExpandableAdapter.ViewHolder>
     ) {
         val itemView = viewHolder.itemView
         header?.isVisible = true
@@ -77,8 +77,8 @@ private class StickyHeaderDecoration(private val callback: Callback) :
 
     private var headerGroupPosition = -1
     private var headerViewType: Int? = null
-    private var headerViewHolder: RecyclerView.ViewHolder? = null
-    private var expandableAdapter: ExpandableAdapter<RecyclerView.ViewHolder>? = null
+    private var headerViewHolder: ExpandableAdapter.ViewHolder? = null
+    private var expandableAdapter: ExpandableAdapter<ExpandableAdapter.ViewHolder>? = null
     private var changeObservable = object : RecyclerView.AdapterDataObserver() {
 
         override fun onItemRangeChanged(positionStart: Int, itemCount: Int, payload: Any?) {
@@ -99,7 +99,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
     override fun onDraw(c: Canvas, p: RecyclerView, state: RecyclerView.State) {
         super.onDraw(c, p, state)
         val expandableRecyclerView = p as? ExpandableRecyclerView ?: return
-        val expandableAdapter = p.adapter as? ExpandableAdapter<RecyclerView.ViewHolder> ?: return
+        val expandableAdapter = p.adapter as? ExpandableAdapter<ExpandableAdapter.ViewHolder> ?: return
         if (this.expandableAdapter != expandableAdapter) {
             this.expandableAdapter?.unregisterAdapterDataObserver(changeObservable)
             expandableAdapter.registerAdapterDataObserver(changeObservable)
@@ -108,7 +108,7 @@ private class StickyHeaderDecoration(private val callback: Callback) :
         }
         if (expandableRecyclerView.isEmpty()) return
         val viewHolder = expandableRecyclerView.getChildViewHolder(expandableRecyclerView[0])
-        val groupPosition = expandableAdapter.getGroupPosition(viewHolder)
+        val groupPosition = expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
         val animationRunning = state.willRunPredictiveAnimations()
                 || state.willRunSimpleAnimations()
                 || viewHolder.itemView.hasTransientState()
@@ -181,8 +181,8 @@ private class StickyHeaderDecoration(private val callback: Callback) :
         fun onGroupShow(
             offset: Float,
             recyclerView: RecyclerView,
-            viewHolder: RecyclerView.ViewHolder,
-            expandableAdapter: ExpandableAdapter<RecyclerView.ViewHolder>
+            viewHolder: ExpandableAdapter.ViewHolder,
+            expandableAdapter: ExpandableAdapter<ExpandableAdapter.ViewHolder>
         )
 
         fun onGroupHide()

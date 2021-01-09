@@ -5,8 +5,8 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.3"
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 29
+        minSdkVersion Version.MIN_SDK_VERSION
+        targetSdkVersion Version.TARGET_SDK_VERSION
         applicationId "pokercc.android.expandablerecyclerview.sample.java"
         versionCode appVersion.versionCode
         versionName appVersion.versionName

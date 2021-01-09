@@ -23,14 +23,11 @@ internal class TextBookDecorator(private val spanCount: Int) : RecyclerView.Item
         state: RecyclerView.State
     ) {
         super.getItemOffsets(outRect, view, parent, state)
-        val gridLayoutManager = parent.layoutManager as? GridLayoutManager ?: return
-        val spanSizeLookup = gridLayoutManager.spanSizeLookup
-        val adapterPosition = parent.getChildAdapterPosition(view)
-        val spanSize = spanSizeLookup.getSpanSize(adapterPosition)
-        if (spanSize != 1) return
+        // Don't use spanSizeLookup to calculate spanIndex, it's not right.
+        val spanIndex = (view.layoutParams as? GridLayoutManager.LayoutParams)?.spanIndex ?: return
         val verticalPadding = 15.dpToPx(parent.context).toInt()
         outRect.top = verticalPadding
-        when (spanSizeLookup.getSpanIndex(adapterPosition, spanCount)) {
+        when (spanIndex) {
             0 -> {
                 outRect.left = 20.dpToPx(parent.context).toInt()
                 outRect.right = 10.dpToPx(parent.context).toInt()
@@ -45,8 +42,8 @@ internal class TextBookDecorator(private val spanCount: Int) : RecyclerView.Item
         // 如果是Group的最后一行，给一个下边距
         val expandableAdapter = parent.adapter as? ExpandableAdapter<*> ?: return
         val viewHolder = parent.getChildViewHolder(view)
-        val groupPosition = expandableAdapter.getGroupPosition(viewHolder)
-        val childPosition = expandableAdapter.getChildPosition(viewHolder)
+        val (groupPosition, childPosition) = expandableAdapter.getItemLayoutPosition(viewHolder)
+        childPosition ?: return
         val childCount = expandableAdapter.getChildCount(groupPosition)
         val rowInGroup = ceil((childPosition + 1) / spanCount.toFloat() - 1).toInt()
         val maxRow = ceil(childCount / spanCount.toFloat() - 1).toInt()
@@ -73,17 +70,17 @@ internal class TextBookSpanLookup(
 }
 
 private class TypeViewHolder(val binding: TextBookTypeBinding) :
-    RecyclerView.ViewHolder(binding.root)
+    ExpandableAdapter.ViewHolder(binding.root)
 
 private class GradeViewHolder(val binding: TextBookGradeBinding) :
-    RecyclerView.ViewHolder(binding.root)
+    ExpandableAdapter.ViewHolder(binding.root)
 
 internal class TextBookAdapter(private val items: List<TextBookList>) :
-    ExpandableAdapter<RecyclerView.ViewHolder>() {
+    ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder {
+    ): ExpandableAdapter.ViewHolder {
         val binding = TextBookTypeBinding.inflate(
             LayoutInflater.from(viewGroup.context), viewGroup, false
         )
@@ -93,7 +90,7 @@ internal class TextBookAdapter(private val items: List<TextBookList>) :
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder {
+    ): ExpandableAdapter.ViewHolder {
         val binding = TextBookGradeBinding.inflate(
             LayoutInflater.from(viewGroup.context), viewGroup, false
         )
@@ -101,7 +98,7 @@ internal class TextBookAdapter(private val items: List<TextBookList>) :
     }
 
     override fun onBindChildViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         childPosition: Int,
         payloads: List<Any>
@@ -117,7 +114,7 @@ internal class TextBookAdapter(private val items: List<TextBookList>) :
     }
 
     override fun onBindGroupViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
@@ -131,7 +128,7 @@ internal class TextBookAdapter(private val items: List<TextBookList>) :
     }
 
     override fun onGroupViewHolderExpandChange(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean

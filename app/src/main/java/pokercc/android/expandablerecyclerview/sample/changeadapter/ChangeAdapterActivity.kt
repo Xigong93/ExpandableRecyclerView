@@ -36,27 +36,27 @@ class ChangeAdapterActivity : AppCompatActivity() {
     }
 }
 
-private class ChildVH(val binding: CountChildrenItemBinding) : RecyclerView.ViewHolder(binding.root)
-private class ParentVH(val binding: CountParentItemBinding) : RecyclerView.ViewHolder(binding.root)
+private class ChildVH(val binding: CountChildrenItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
+private class ParentVH(val binding: CountParentItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
 private class CountAdapter(private val groupCount: Int, private val childCount: Int) :
-    ExpandableAdapter<RecyclerView.ViewHolder>() {
+    ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder = LayoutInflater.from(viewGroup.context)
+    ): ExpandableAdapter.ViewHolder = LayoutInflater.from(viewGroup.context)
         .let { CountParentItemBinding.inflate(it, viewGroup, false) }
         .let(::ParentVH)
 
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder = LayoutInflater.from(viewGroup.context)
+    ): ExpandableAdapter.ViewHolder = LayoutInflater.from(viewGroup.context)
         .let { CountChildrenItemBinding.inflate(it, viewGroup, false) }
         .let(::ChildVH)
 
 
     override fun onBindChildViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         childPosition: Int,
         payloads: List<Any>
@@ -69,7 +69,7 @@ private class CountAdapter(private val groupCount: Int, private val childCount: 
     }
 
     override fun onBindGroupViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
@@ -84,7 +84,7 @@ private class CountAdapter(private val groupCount: Int, private val childCount: 
 
 
     override fun onGroupViewHolderExpandChange(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean

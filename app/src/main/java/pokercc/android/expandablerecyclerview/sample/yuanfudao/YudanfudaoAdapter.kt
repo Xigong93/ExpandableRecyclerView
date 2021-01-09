@@ -8,16 +8,16 @@ import pokercc.android.expandablerecyclerview.sample.databinding.YuanfudaoChildI
 import pokercc.android.expandablerecyclerview.sample.databinding.YuanfudaoGroupItemBinding
 
 internal class YuanfudaoGroupViewHolder(val binding: YuanfudaoGroupItemBinding) :
-    RecyclerView.ViewHolder(binding.root)
+    ExpandableAdapter.ViewHolder(binding.root)
 
 internal class YuanfudaoChildViewHolder(val binding: YuanfudaoChildItemBinding) :
-    RecyclerView.ViewHolder(binding.root)
+    ExpandableAdapter.ViewHolder(binding.root)
 
-internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() {
+internal class YudanfudaoAdapter : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder {
+    ): ExpandableAdapter.ViewHolder {
         val inflater = LayoutInflater.from(viewGroup.context)
         val binding = YuanfudaoGroupItemBinding.inflate(
             inflater, viewGroup, false
@@ -28,7 +28,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
-    ): RecyclerView.ViewHolder {
+    ): ExpandableAdapter.ViewHolder {
         val inflater = LayoutInflater.from(viewGroup.context)
         val binding = YuanfudaoChildItemBinding.inflate(
             inflater, viewGroup, false
@@ -37,7 +37,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
     }
 
     override fun onBindChildViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         childPosition: Int,
         payloads: List<Any>
@@ -52,7 +52,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
     }
 
     override fun onBindGroupViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
@@ -66,7 +66,7 @@ internal class YudanfudaoAdapter : ExpandableAdapter<RecyclerView.ViewHolder>() 
     }
 
     override fun onGroupViewHolderExpandChange(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean

@@ -3,7 +3,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
@@ -25,3 +25,9 @@ android {
     }
 
 }
+
+//compileKotlin {
+//    kotlinOptions {
+//        apiVersion = '1.3'
+//    }
+//}

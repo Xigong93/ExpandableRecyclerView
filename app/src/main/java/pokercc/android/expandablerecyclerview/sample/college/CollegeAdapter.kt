@@ -14,19 +14,19 @@ import java.lang.IllegalArgumentException
 
 
 private class ProvinceVH(val itemBinding: ProvinceItemBinding) :
-    RecyclerView.ViewHolder(itemBinding.root)
+    ExpandableAdapter.ViewHolder(itemBinding.root)
 
 private class CityVH(val itemBinding: CityItemBinding) :
-    RecyclerView.ViewHolder(itemBinding.root)
+    ExpandableAdapter.ViewHolder(itemBinding.root)
 
 private class CollegeVH(val itemBinding: CollegeItemBinding) :
-    RecyclerView.ViewHolder(itemBinding.root)
+    ExpandableAdapter.ViewHolder(itemBinding.root)
 
 private class FamousCollegeVH(val itemBinding: FamousCollegeItemBinding) :
-    RecyclerView.ViewHolder(itemBinding.root)
+    ExpandableAdapter.ViewHolder(itemBinding.root)
 
 internal class CollegeAdapter(private val shortList: Boolean, private val data: List<CollegeZone>) :
-    ExpandableAdapter<RecyclerView.ViewHolder>() {
+    ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
     companion object {
         private const val PROVINCE_ITEM = 11
         private const val CITY_ITEM = 12
@@ -36,7 +36,7 @@ internal class CollegeAdapter(private val shortList: Boolean, private val data: 
 
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup, viewType: Int
-    ): RecyclerView.ViewHolder {
+    ): ExpandableAdapter.ViewHolder {
         val inflater = LayoutInflater.from(viewGroup.context)
         return when (viewType) {
             PROVINCE_ITEM -> {
@@ -58,7 +58,7 @@ internal class CollegeAdapter(private val shortList: Boolean, private val data: 
 
     override fun onCreateChildViewHolder(
         viewGroup: ViewGroup, viewType: Int
-    ): RecyclerView.ViewHolder {
+    ): ExpandableAdapter.ViewHolder {
         val inflater = LayoutInflater.from(viewGroup.context)
         return when (viewType) {
             FAMOUS_COLLEGE__ITEM -> {
@@ -98,7 +98,7 @@ internal class CollegeAdapter(private val shortList: Boolean, private val data: 
     }
 
     override fun onBindChildViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         childPosition: Int,
         payloads: List<Any>
@@ -115,7 +115,7 @@ internal class CollegeAdapter(private val shortList: Boolean, private val data: 
     }
 
     override fun onBindGroupViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         expand: Boolean,
         payloads: List<Any>
@@ -135,7 +135,7 @@ internal class CollegeAdapter(private val shortList: Boolean, private val data: 
 
 
     override fun onGroupViewHolderExpandChange(
-        holder: RecyclerView.ViewHolder,
+        holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
         animDuration: Long,
         expand: Boolean
