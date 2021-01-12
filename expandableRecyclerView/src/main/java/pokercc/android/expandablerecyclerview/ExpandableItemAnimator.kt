@@ -17,7 +17,7 @@ import kotlin.math.max
  */
 open class ExpandableItemAnimator @JvmOverloads constructor(
     private val expandableRecyclerView: ExpandableRecyclerView,
-    animDuration: Long = 300L,
+    animDuration: Long = 400L,
     private val animChildrenItem: Boolean = false
 ) : SimpleItemAnimator() {
     companion object {
