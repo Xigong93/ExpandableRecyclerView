@@ -143,11 +143,11 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
     }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    fun findGroupViewHolder(groupPosition: Int): ViewHolder? {
+    fun findGroupViewHolder(groupLayoutPosition: Int): ViewHolder? {
         for (child in children) {
             val viewHolder = getChildViewHolder(child)
             if (!requireAdapter().isGroup(viewHolder.itemViewType)) continue
-            if (groupPosition == requireAdapter().getItemLayoutPosition(viewHolder).groupPosition) {
+            if (groupLayoutPosition == requireAdapter().getItemLayoutPosition(viewHolder).groupPosition) {
                 return viewHolder
             }
         }
