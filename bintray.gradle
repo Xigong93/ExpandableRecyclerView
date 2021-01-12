@@ -2,7 +2,7 @@ apply plugin: 'com.jfrog.bintray'
 
 apply plugin: "com.github.dcendents.android-maven"
 
-version = "0.8.1"
+version = "0.8.2"
 group = "pokercc.android.ExpandableRecyclerView"
 def projectName = "ExpandableRecyclerView"
 def username="pokercc"
