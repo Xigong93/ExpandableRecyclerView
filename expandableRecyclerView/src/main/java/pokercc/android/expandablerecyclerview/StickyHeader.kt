@@ -78,13 +78,10 @@ private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> 
             super.onItemRangeChanged(positionStart, itemCount, payload)
             val adapter = adapter ?: return
             val viewHolder = header ?: return
-            if (headerGroup in positionStart..(positionStart + itemCount)) {
-                adapter.onBindViewHolder(
-                    viewHolder,
-                    adapter.getGroupAdapterPosition(headerGroup),
-                    payload?.let { mutableListOf(it) } ?: mutableListOf()
-                )
-
+            val headerPosition = adapter.getGroupAdapterPosition(headerGroup)
+            if (headerPosition in positionStart..(positionStart + itemCount)) {
+                val payloads = payload?.let { mutableListOf(it) } ?: mutableListOf()
+                adapter.onBindViewHolder(viewHolder, headerPosition, payloads)
             }
 
         }
