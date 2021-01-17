@@ -236,10 +236,22 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
         }
     }
 
+    /**
+     * Must be positive .
+     * See also [isGroup]
+     */
     open fun getGroupItemViewType(groupPosition: Int): Int = 1
 
+    /**
+     * Must be negative or zero .
+     * See also [isGroup]
+     */
     open fun getChildItemViewType(groupPosition: Int, childPosition: Int): Int = -1
 
+    /**
+     * Distinguish group item or child item by viewType.
+     * By default groupViewType is positive , childViewType is negative or zero.
+     */
     open fun isGroup(viewType: Int): Boolean = viewType > 0
 
     final override fun onBindViewHolder(viewHolder: VH, position: Int) = Unit
