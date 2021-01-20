@@ -9,6 +9,7 @@ import android.os.Parcelable.ClassLoaderCreator
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import androidx.annotation.Keep
 import androidx.core.view.children
 import androidx.customview.view.AbsSavedState
 import androidx.recyclerview.widget.RecyclerView
@@ -109,6 +110,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
      * Hook system method to handle touch event.
      */
     @Suppress("MemberVisibilityCanBePrivate", "unused")
+    @Keep
     protected fun isTransformedTouchPointInView(
         x: Float, y: Float, child: View,
         outLocalPoint: PointF?
