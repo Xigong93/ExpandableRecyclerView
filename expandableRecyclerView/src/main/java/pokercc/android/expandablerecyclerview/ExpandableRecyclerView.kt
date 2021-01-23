@@ -88,10 +88,12 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             val itemPosition = requireAdapter().getItemLayoutPosition(holder)
             Log.d(
                 LOG_TAG,
-                "itemPosition:${itemPosition},top:$groupViewBottom,bottom:${bottom},viewHolder:$holder"
+                "clipAndDrawChild itemPosition:${itemPosition},top:$groupViewBottom,bottom:${bottom},viewHolder:$holder"
             )
         }
-        // Clip
+        // fix child item had z or elevation
+        if (canvas.isHardwareAccelerated) CanvasCompat.disableZ(canvas)
+        // Clip child item
         val saveCount = canvas.save()
         try {
             canvas.clipRect(
