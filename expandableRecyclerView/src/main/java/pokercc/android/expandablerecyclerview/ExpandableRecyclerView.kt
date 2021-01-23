@@ -79,7 +79,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         val (groupPosition, _) = requireAdapter().getItemLayoutPosition(holder)
         // Child must draw between it's group and next group.
         val groupView = findGroupViewHolder(groupPosition)?.itemView
-        val groupViewBottom =
+        val top =
             groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
         val nextGroupView = findGroupViewHolder(groupPosition + 1)?.itemView
         val bottom = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
@@ -88,7 +88,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             val itemPosition = requireAdapter().getItemLayoutPosition(holder)
             Log.d(
                 LOG_TAG,
-                "clipAndDrawChild itemPosition:${itemPosition},top:$groupViewBottom,bottom:${bottom},viewHolder:$holder"
+                "clipAndDrawChild itemPosition:${itemPosition},top:$top,bottom:${bottom},viewHolder:$holder"
             )
         }
         // fix child item had z or elevation
@@ -96,12 +96,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         // Clip child item
         val saveCount = canvas.save()
         try {
-            canvas.clipRect(
-                child.x,
-                groupViewBottom,
-                child.x + child.width,
-                bottom
-            )
+            canvas.clipRect(0f, top, width.toFloat(), bottom)
             return drawAction(canvas)
         } finally {
             canvas.restoreToCount(saveCount)
