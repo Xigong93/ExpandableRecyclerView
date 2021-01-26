@@ -1,46 +1,21 @@
 package pokercc.android.expandablerecyclerview
 
-import android.annotation.SuppressLint
-import android.graphics.Canvas
-import android.graphics.RectF
+import android.graphics.Rect
 import android.view.View
-import android.widget.FrameLayout
-
-@SuppressLint("ViewConstructor")
-internal class ItemCliper(private val child: View)   {
 
 
-    private val clipRect = RectF()
+internal class ItemClipper(private val target: View) {
 
-    private var willNotClip = false
-    fun setClipRect(left: Float, top: Float, right: Float, bottom: Float) {
+    private val clipRect = Rect()
+    //    private var clip = false
+    fun setBorder(left: Int, top: Int, right: Int, bottom: Int) {
+        val y = target.y
         clipRect.set(
-            left,
-            top - y,
-            right,
-            bottom - y
+            left, (top - y).toInt(),
+            right, (bottom - y).toInt()
         )
-        invalidate()
-        willNotClip = false
-        invalidateOutline()
+        target.clipBounds = clipRect
     }
 
-    fun willNotClip() {
-        willNotClip = true
-    }
 
-    override fun dispatchDraw(canvas: Canvas) {
-        val clip = clipRect
-        if (willNotClip) {
-            super.dispatchDraw(canvas)
-            return
-        }
-        val count = canvas.save()
-        try {
-            canvas.clipRect(clip)
-            super.dispatchDraw(canvas)
-        } finally {
-            canvas.restoreToCount(count)
-        }
-    }
 }

@@ -60,9 +60,29 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
     }
 
     override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
-        return clipAndDrawChild(canvas, child) {
-            super.drawChild(canvas, child, drawingTime)
+        val holder = getChildViewHolder(child) as ExpandableAdapter.ViewHolder
+        // Ignore group
+        val layoutManager = layoutManager
+        if (layoutManager == null || !isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
+            return super.drawChild(canvas, child, drawingTime)
         }
+        val (groupPosition, _) = requireAdapter().getItemLayoutPosition(holder)
+        // Child must draw between it's group and next group.
+        val groupView = findGroupViewHolder(groupPosition)?.itemView
+        val top =
+            groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
+        val nextGroupView = findGroupViewHolder(groupPosition + 1)?.itemView
+        val bottom = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
+            ?: height.toFloat()
+        if (DEBUG) {
+            val itemPosition = requireAdapter().getItemLayoutPosition(holder)
+            Log.d(
+                LOG_TAG,
+                "drawChild position:${itemPosition},top:$top,bottom:${bottom},holder:$holder"
+            )
+        }
+        holder.itemClipper.setBorder(0, top.toInt(), width, bottom.toInt())
+        return super.drawChild(canvas, child, drawingTime)
     }
 
     /**
@@ -88,11 +108,9 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             val itemPosition = requireAdapter().getItemLayoutPosition(holder)
             Log.d(
                 LOG_TAG,
-                "clipAndDrawChild itemPosition:${itemPosition},top:$top,bottom:${bottom},viewHolder:$holder"
+                "clipAndDrawChild p:${itemPosition},top:$top,bottom:${bottom},holder:$holder"
             )
         }
-        // fix child item had z or elevation
-        if (canvas.isHardwareAccelerated) CanvasCompat.disableZ(canvas)
         // Clip child item
         val saveCount = canvas.save()
         try {

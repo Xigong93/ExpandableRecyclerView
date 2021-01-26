@@ -36,13 +36,7 @@ implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${
 
 注意事项:
 - 使用StickyHeader，GroupViewHolder.itemView请设置不透明的背景，否则会发生穿透的情况
-- ExpandableRecyclerView的height需要设置为match_parent或固定大小,否则在展开和关闭时，RecyclerView的高度会发生变化导致动画的执行有问题 
-
-已知问题:
-- 当子itemView 设置了z或者elevation,在执行动画的过程中将不会显示阴影（Android 9.0 除外)
-
-
-
+- ExpandableRecyclerView的height需要设置为match_parent或固定大小,否则在展开和关闭时，RecyclerView的高度会发生变化导致动画的执行有问题
 
 设计图来自:https://dribbble.com/shots/3253927-Accordion
 

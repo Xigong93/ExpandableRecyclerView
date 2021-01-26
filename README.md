@@ -37,9 +37,6 @@ Attention:
 - Using StickyHeader，GroupViewHolder.itemView please set an opaque background, otherwise penetration will occur
 - ExpandableRecyclerView's height must set to match_parent or static size, Otherwise, the RecyclerView height may change during expansion and closure, causing problems for the execution of the animation
 
-Known issues:
-- When ItemView had z or elevation ,shadow will not show during animation.(Except Android P)
-
 Design from: https://dribbble.com/shots/3253927-Accordion
 
 Welcome to star or create issue.
