@@ -12,6 +12,7 @@ import android.view.View
 import androidx.annotation.Keep
 import androidx.core.view.children
 import androidx.customview.view.AbsSavedState
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlin.math.max
 import kotlin.math.min
@@ -39,6 +40,15 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         }
     }
 
+    override fun setLayoutManager(layout: LayoutManager?) {
+        if (layout is LinearLayoutManager) {
+            check(layout.orientation != LinearLayoutManager.HORIZONTAL) {
+                "Unsupported horizontal orientation."
+            }
+        }
+        super.setLayoutManager(layout)
+    }
+
     override fun setAdapter(adapter: Adapter<*>?) {
         if (adapter != null) {
             require(adapter is ExpandableAdapter)
@@ -48,7 +58,6 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             itemAnimator = ExpandableItemAnimator(this)
         }
     }
-
 
     fun requireAdapter(): ExpandableAdapter<*> {
         return requireNotNull(getExpandableAdapter())
@@ -62,60 +71,91 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
     override fun drawChild(canvas: Canvas, child: View, drawingTime: Long): Boolean {
         val holder = getChildViewHolder(child) as ExpandableAdapter.ViewHolder
         // Ignore group
-        val layoutManager = layoutManager
-        if (layoutManager == null || !isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
+        if (!isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
             return super.drawChild(canvas, child, drawingTime)
         }
-        val (groupPosition, _) = requireAdapter().getItemLayoutPosition(holder)
+        val layout = requireNotNull(layoutManager)
+        val (group, _) = requireAdapter().getItemLayoutPosition(holder)
         // Child must draw between it's group and next group.
-        val groupView = findGroupViewHolder(groupPosition)?.itemView
-        val top =
-            groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
-        val nextGroupView = findGroupViewHolder(groupPosition + 1)?.itemView
-        val bottom = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
-            ?: height.toFloat()
-        if (DEBUG) {
-            val itemPosition = requireAdapter().getItemLayoutPosition(holder)
-            Log.d(
-                LOG_TAG,
-                "drawChild position:${itemPosition},top:$top,bottom:${bottom},holder:$holder"
-            )
+        val top = (findGroupViewHolder(group)?.itemView
+            ?.let { it.y + it.height + layout.getBottomDecorationHeight(it) }
+            ?: 0f)
+            .let { it + layout.getTopDecorationHeight(child) }
+        val bottom = (findGroupViewHolder(group + 1)?.itemView
+            ?.let { it.y - layout.getTopDecorationHeight(it) }
+            ?: height.toFloat())
+            .let { it - layout.getBottomDecorationHeight(child) }
+
+        holder.itemClipper.setBorder(0f, top, width.toFloat(), bottom)
+        if (DEBUG) Log.d(LOG_TAG, "drawChild,holder:$holder")
+        return if (holder.itemClipper.skipDraw) {
+            false
+        } else {
+            super.drawChild(canvas, child, drawingTime)
         }
-        holder.itemClipper.setBorder(0, top.toInt(), width, bottom.toInt())
-        return super.drawChild(canvas, child, drawingTime)
     }
 
     /**
      * Clip and draw
      */
     @Suppress("MemberVisibilityCanBePrivate")
+    @Deprecated("Deprecated", replaceWith = ReplaceWith("clipByChildBound"))
     fun <T> clipAndDrawChild(canvas: Canvas, child: View, drawAction: (Canvas) -> T): T {
         val holder = getChildViewHolder(child)
         // Ignore group
-        val layoutManager = layoutManager
-        if (layoutManager == null || !isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
+        val layout = requireNotNull(layoutManager)
+        if (!isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
             return drawAction(canvas)
         }
-        val (groupPosition, _) = requireAdapter().getItemLayoutPosition(holder)
+        val (group, _) = requireAdapter().getItemLayoutPosition(holder)
         // Child must draw between it's group and next group.
-        val groupView = findGroupViewHolder(groupPosition)?.itemView
-        val top =
-            groupView?.let { it.y + it.height + layoutManager.getBottomDecorationHeight(it) } ?: 0f
-        val nextGroupView = findGroupViewHolder(groupPosition + 1)?.itemView
-        val bottom = nextGroupView?.let { it.y - layoutManager.getTopDecorationHeight(it) }
-            ?: height.toFloat()
-        if (DEBUG) {
-            val itemPosition = requireAdapter().getItemLayoutPosition(holder)
-            Log.d(
-                LOG_TAG,
-                "clipAndDrawChild p:${itemPosition},top:$top,bottom:${bottom},holder:$holder"
-            )
-        }
+        val top = (findGroupViewHolder(group)?.itemView
+            ?.let { it.y + it.height + layout.getBottomDecorationHeight(it) }
+            ?: 0f)
+            .let { it + layout.getTopDecorationHeight(child) }
+        val bottom = (findGroupViewHolder(group + 1)?.itemView
+            ?.let { it.y - layout.getTopDecorationHeight(it) }
+            ?: height.toFloat())
+            .let { it - layout.getBottomDecorationHeight(child) }
+        if (DEBUG) Log.d(LOG_TAG, "clipAndDrawChild,holder:$holder")
+
         // Clip child item
         val saveCount = canvas.save()
         try {
             canvas.clipRect(0f, top, width.toFloat(), bottom)
             return drawAction(canvas)
+        } finally {
+            canvas.restoreToCount(saveCount)
+        }
+    }
+
+    /**
+     * Clip canvas by child's bound.
+     */
+    @Suppress("MemberVisibilityCanBePrivate")
+    public fun clipByChildBound(canvas: Canvas, child: View, drawOperate: (Canvas) -> Unit) {
+        val holder = getChildViewHolder(child)
+        // Ignore group
+        val layout = requireNotNull(layoutManager)
+        if (!isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
+            return drawOperate(canvas)
+        }
+        val (group, _) = requireAdapter().getItemLayoutPosition(holder)
+        // Child must draw between it's group and next group.
+        val top = (findGroupViewHolder(group)?.itemView
+            ?.let { it.y + it.height + layout.getBottomDecorationHeight(it) }
+            ?: 0f)
+            .let { it + layout.getTopDecorationHeight(child) }
+        val bottom = (findGroupViewHolder(group + 1)?.itemView
+            ?.let { it.y - layout.getTopDecorationHeight(it) }
+            ?: height.toFloat())
+            .let { it - layout.getBottomDecorationHeight(child) }
+        if (DEBUG) Log.d(LOG_TAG, "clipByChildBound,holder:$holder")
+        // Clip child item
+        val saveCount = canvas.save()
+        try {
+            canvas.clipRect(0f, top, width.toFloat(), bottom)
+            return drawOperate(canvas)
         } finally {
             canvas.restoreToCount(saveCount)
         }

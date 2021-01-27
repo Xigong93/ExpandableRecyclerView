@@ -33,6 +33,11 @@ abstract class ExpandableAdapter<VH : ExpandableAdapter.ViewHolder> : RecyclerVi
         internal lateinit var layoutItemPosition: ItemPosition
 
         internal val itemClipper = ItemClipper(itemView)
+        override fun toString(): String {
+            return "ViewHolder(layoutItemPosition=$layoutItemPosition, " +
+                    "itemClipper=$itemClipper,${super.toString()})"
+        }
+
     }
 
     data class ItemPosition(var groupPosition: Int, var childPosition: Int?)

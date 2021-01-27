@@ -2,19 +2,30 @@ package pokercc.android.expandablerecyclerview
 
 import android.graphics.Rect
 import android.view.View
-
+import kotlin.math.ceil
+import kotlin.math.floor
 
 internal class ItemClipper(private val target: View) {
 
     private val clipRect = Rect()
-    //    private var clip = false
-    fun setBorder(left: Int, top: Int, right: Int, bottom: Int) {
+
+    fun setBorder(left: Float, top: Float, right: Float, bottom: Float) {
         val y = target.y
         clipRect.set(
-            left, (top - y).toInt(),
-            right, (bottom - y).toInt()
+            ceil(left).toInt(),
+            ceil(top - y).toInt(),
+            floor(right).toInt(),
+            floor(bottom - y).toInt()
         )
         target.clipBounds = clipRect
+    }
+
+    val skipDraw: Boolean
+        get() = clipRect.isEmpty || clipRect.top >= target.height || clipRect.bottom <= 0
+
+
+    override fun toString(): String {
+        return "ItemClipper(clipRect=$clipRect,skipDraw=$skipDraw)"
     }
 
 
