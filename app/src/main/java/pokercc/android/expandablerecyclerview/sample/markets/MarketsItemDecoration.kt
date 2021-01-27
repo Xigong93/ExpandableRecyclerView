@@ -25,14 +25,16 @@ class MarketsItemDecoration : RecyclerView.ItemDecoration() {
         // Draw divide line between children item.
         for (view in parent) {
             val viewHolder = parent.getChildViewHolder(view)
-            val (groupPosition, childPosition) = adapter.getItemLayoutPosition(viewHolder as ExpandableAdapter.ViewHolder)
+            val params = viewHolder.itemView.layoutParams as RecyclerView.LayoutParams
+            viewHolder as ExpandableAdapter.ViewHolder
+            val (groupPosition, childPosition) = adapter.getItemLayoutPosition(viewHolder)
             val childCount = adapter.getChildCount(groupPosition)
             if (!adapter.isGroup(viewHolder.itemViewType) && childPosition != childCount - 1) {
                 val y = layoutManager.getDecoratedBottom(view) + view.translationY
                 parent.clipAndDrawChild(c, view) {
                     it.drawLine(
-                        parent.paddingStart + 10.dpToPx(), y,
-                        parent.width - parent.paddingEnd.toFloat(), y,
+                        parent.paddingStart + 10.dpToPx() + params.marginStart, y,
+                        parent.width - parent.paddingEnd.toFloat() - params.marginEnd, y,
                         linePaint
                     )
                 }

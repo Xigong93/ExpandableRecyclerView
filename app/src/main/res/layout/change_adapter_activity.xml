@@ -1,22 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
-    <pokercc.android.expandablerecyclerview.StickyHeaderRecyclerViewContainer
+    <pokercc.android.expandablerecyclerview.StickyHeader
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/change_adapter"
-        app:layout_constraintTop_toTopOf="parent">
-
+        android:layout_weight="1" >
         <pokercc.android.expandablerecyclerview.ExpandableRecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </pokercc.android.expandablerecyclerview.StickyHeaderRecyclerViewContainer>
+    </pokercc.android.expandablerecyclerview.StickyHeader>
 
 
     <Button
@@ -26,4 +25,12 @@
         android:text="Change Adapter"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:ignore="HardcodedText" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Button
+        android:id="@+id/notify_data_set"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Notify data set"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:ignore="HardcodedText" />
+</LinearLayout>

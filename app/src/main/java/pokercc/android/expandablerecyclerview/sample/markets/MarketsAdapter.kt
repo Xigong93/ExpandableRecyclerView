@@ -15,8 +15,11 @@ import pokercc.android.expandablerecyclerview.sample.databinding.MarketsChildIte
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsParentItemBinding
 import pokercc.android.expandablerecyclerview.sample.dpToPx
 
-class MarketChildVH(val binding: MarketsChildItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
-class MarketParentVH(val binding: MarketsParentItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
+class MarketChildVH(val binding: MarketsChildItemBinding) :
+    ExpandableAdapter.ViewHolder(binding.root)
+
+class MarketParentVH(val binding: MarketsParentItemBinding) :
+    ExpandableAdapter.ViewHolder(binding.root)
 
 private val names = listOf(
     "Nathaniel Fitzgerald",

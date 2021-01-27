@@ -31,15 +31,31 @@ class ChangeAdapterActivity : AppCompatActivity() {
         binding.recyclerView.adapter = CountAdapter(3, 2)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.changeAdapter.setOnClickListener {
-            binding.recyclerView.adapter = CountAdapter(Random.nextInt(1, 4), Random.nextInt(2, 10))
+            binding.recyclerView.adapter = CountAdapter()
+        }
+        binding.notifyDataSet.setOnClickListener {
+            (binding.recyclerView.adapter as? CountAdapter)?.setNewData()
         }
     }
 }
 
-private class ChildVH(val binding: CountChildrenItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
-private class ParentVH(val binding: CountParentItemBinding) : ExpandableAdapter.ViewHolder(binding.root)
-private class CountAdapter(private val groupCount: Int, private val childCount: Int) :
-    ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
+private class ChildVH(val binding: CountChildrenItemBinding) :
+    ExpandableAdapter.ViewHolder(binding.root)
+
+private class ParentVH(val binding: CountParentItemBinding) :
+    ExpandableAdapter.ViewHolder(binding.root)
+
+private class CountAdapter(
+    private var groupCount: Int = Random.nextInt(1, 10),
+    private var childCount: Int = Random.nextInt(2, 10)
+) : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
+
+    fun setNewData() {
+        groupCount = Random.nextInt(1, 10)
+        childCount = Random.nextInt(2, 10)
+        notifyDataSetChanged()
+    }
+
     override fun onCreateGroupViewHolder(
         viewGroup: ViewGroup,
         viewType: Int
