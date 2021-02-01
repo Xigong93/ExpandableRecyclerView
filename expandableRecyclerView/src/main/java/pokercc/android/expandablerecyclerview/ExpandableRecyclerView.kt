@@ -72,6 +72,7 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         val holder = getChildViewHolder(child) as ExpandableAdapter.ViewHolder
         // Ignore group
         if (!isAnimating || requireAdapter().isGroup(holder.itemViewType)) {
+            holder.itemClipper.clearBorder()
             return super.drawChild(canvas, child, drawingTime)
         }
         val layout = requireNotNull(layoutManager)

@@ -2,9 +2,11 @@ package pokercc.android.expandablerecyclerview
 
 import android.graphics.Rect
 import android.view.View
+import androidx.annotation.UiThread
 import kotlin.math.ceil
 import kotlin.math.floor
 
+@UiThread
 internal class ItemClipper(private val target: View) {
 
     private val clipRect = Rect()
@@ -18,6 +20,17 @@ internal class ItemClipper(private val target: View) {
             floor(bottom - y).toInt()
         )
         target.clipBounds = clipRect
+        borderExists = true
+    }
+
+    private var borderExists = false
+
+    fun clearBorder() {
+        if (borderExists) {
+            clipRect.setEmpty()
+            target.clipBounds = null
+            borderExists = false
+        }
     }
 
     val skipDraw: Boolean
