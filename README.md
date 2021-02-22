@@ -28,8 +28,8 @@ implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${
 ```
 
 2. Write code
-- use ExpandableRecyclerView in you layout xml
-- expand ExpandableAdapter,to create your adapter
+- Use `ExpandableRecyclerView` in your layout xml.
+- Inheriting `ExpandableAdapter` to realize your adapter.
 
 More detail please refer demo
 
