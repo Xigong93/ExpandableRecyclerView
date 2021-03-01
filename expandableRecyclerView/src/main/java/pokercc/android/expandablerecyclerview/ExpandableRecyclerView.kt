@@ -9,6 +9,7 @@ import android.os.Parcelable.ClassLoaderCreator
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.Keep
 import androidx.core.view.children
 import androidx.customview.view.AbsSavedState
@@ -210,6 +211,13 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
             }
         }
         return null
+    }
+
+    override fun setLayoutParams(params: ViewGroup.LayoutParams) {
+        require(params.height >= ViewGroup.LayoutParams.MATCH_PARENT) {
+            "ExpandableRecyclerView height must be static size or MATCH_PARENT"
+        }
+        super.setLayoutParams(params)
     }
 
     override fun onSaveInstanceState(): Parcelable {
