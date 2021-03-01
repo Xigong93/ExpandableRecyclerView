@@ -85,6 +85,11 @@ private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> 
             }
 
         }
+
+        override fun onChanged() {
+            super.onChanged()
+            header = null
+        }
     }
 
     private fun getFirstVisibleHolder(
