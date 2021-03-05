@@ -79,7 +79,6 @@ class MarketsAdapter : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
         holder.binding.root.background = ShapeDrawable(shape).apply {
             paint.color = Color.WHITE
         }
-        holder.itemView.setOnClickListener { MenuActivity.start(it.context) }
     }
 
     override fun onBindGroupViewHolder(

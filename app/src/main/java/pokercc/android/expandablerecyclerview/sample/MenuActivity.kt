@@ -9,6 +9,7 @@ import pokercc.android.expandablerecyclerview.sample.college.CollegeActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsActivityBinding
 import pokercc.android.expandablerecyclerview.sample.markets.MarketsActivity
+import pokercc.android.expandablerecyclerview.sample.slection.SelectionActivity
 import pokercc.android.expandablerecyclerview.sample.textbook.TextBookListActivity
 import pokercc.android.expandablerecyclerview.sample.yuanfudao.YuanfudaoActivity
 
@@ -37,6 +38,9 @@ class MenuActivity : AppCompatActivity() {
         }
         binding.changeAdapter.setOnClickListener {
             ChangeAdapterActivity.start(it.context)
+        }
+        binding.selection.setOnClickListener {
+            SelectionActivity.start(it.context)
         }
     }
 }

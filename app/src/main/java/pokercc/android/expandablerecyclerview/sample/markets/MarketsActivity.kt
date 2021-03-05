@@ -20,6 +20,9 @@ class MarketsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        binding.more.setOnClickListener {
+            MenuActivity.start(it.context)
+        }
         with(binding.recyclerView) {
             adapter = MarketsAdapter()
             itemAnimator = ExpandableItemAnimator(this, animChildrenItem = true)

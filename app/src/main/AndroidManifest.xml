@@ -11,6 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup">
+        <activity android:name=".slection.SelectionActivity"></activity>
         <activity android:name=".MenuActivity" />
         <activity android:name=".college.CollegeActivity" />
         <activity android:name=".textbook.TextBookListActivity" />

@@ -41,4 +41,11 @@
         android:layout_height="wrap_content"
         android:text="change adapter"
         app:layout_constraintTop_toTopOf="parent" />
+    <Button
+        android:id="@+id/selection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="selection"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </LinearLayout>
