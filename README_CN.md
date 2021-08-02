@@ -21,10 +21,10 @@
 ## 如何使用:
 1. 引入依赖
 
-last_version = ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
+last_version = [![](https://jitpack.io/v/pokercc/ExpandableRecyclerView.svg)](https://jitpack.io/#pokercc/ExpandableRecyclerView)
 
 ```gradle
-implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")
+implementation("com.github.pokercc:ExpandableRecyclerView:${last_version}")
 
 ```
 

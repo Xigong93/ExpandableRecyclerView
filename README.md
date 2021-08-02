@@ -20,10 +20,19 @@ Download Url https://github.com/pokercc/ExpandableRecyclerView/releases
 ## How to use:
 1. include dependence
 
-last_version = ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
+Add it in your root build.gradle at the end of repositories:
+```
+allprojects {
+    repositories {
+        ...
+        maven { url 'https://jitpack.io' }
+    }
+}
+```
+last_version = [![](https://jitpack.io/v/pokercc/ExpandableRecyclerView.svg)](https://jitpack.io/#pokercc/ExpandableRecyclerView)
 
 ```gradle
-implementation("pokercc.android.ExpandableRecyclerView:expandableRecyclerView:${last_version}")
+implementation("com.github.pokercc:ExpandableRecyclerView:${last_version}")
 
 ```
 
