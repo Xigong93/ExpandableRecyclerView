@@ -1,4 +1,4 @@
-# ExpandableRecyclerView ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
+# ExpandableRecyclerView [![](https://jitpack.io/v/pokercc/ExpandableRecyclerView.svg)](https://jitpack.io/#pokercc/ExpandableRecyclerView)
 [中文README](./README_CN.md)
 ## Design Sketch
 

@@ -1,4 +1,4 @@
-# ExpandableRecyclerView ![Bintray](https://img.shields.io/bintray/v/pokercc/android/ExpandableRecyclerView)
+# ExpandableRecyclerView [![](https://jitpack.io/v/pokercc/ExpandableRecyclerView.svg)](https://jitpack.io/#pokercc/ExpandableRecyclerView)
 使用RecyclerView 实现的折叠列表
 
 ## 效果图
