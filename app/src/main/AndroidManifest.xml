@@ -26,6 +26,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".changeadapter.ChangeAdapterActivity" />
+        <activity android:name=".childsticky.ChildStickyHeaderActivity" />
     </application>
 
 </manifest>
