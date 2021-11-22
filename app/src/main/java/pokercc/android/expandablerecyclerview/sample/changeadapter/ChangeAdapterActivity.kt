@@ -1,6 +1,7 @@
 package pokercc.android.expandablerecyclerview.sample.changeadapter
 
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -28,7 +29,7 @@ class ChangeAdapterActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        binding.recyclerView.adapter = CountAdapter(3, 2)
+        binding.recyclerView.adapter = CountAdapter(30, 5)
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.changeAdapter.setOnClickListener {
             binding.recyclerView.adapter = CountAdapter()
@@ -51,8 +52,8 @@ private class CountAdapter(
 ) : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
 
     fun setNewData() {
-        groupCount = Random.nextInt(1, 10)
-        childCount = Random.nextInt(2, 10)
+        groupCount = Random.nextInt(5, 10)
+        childCount = Random.nextInt(3, 10)
         notifyDataSetChanged()
     }
 
@@ -84,6 +85,7 @@ private class CountAdapter(
         }
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onBindGroupViewHolder(
         holder: ExpandableAdapter.ViewHolder,
         groupPosition: Int,
@@ -92,7 +94,7 @@ private class CountAdapter(
     ) {
         if (payloads.isEmpty()) {
             (holder as? ParentVH)?.apply {
-                binding.titleText.text = (groupPosition + 1).toString()
+                binding.titleText.text = "Group "+(groupPosition + 1).toString()
                 binding.arrowImage.rotation = if (expand) 0f else -90.0f
             }
         }
