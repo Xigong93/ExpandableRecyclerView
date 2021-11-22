@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 
 private const val DEBUG = false
 
+private const val LOG_TAG = "StickyHeader"
+
 open class StickyHeader @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : FrameLayout(context, attrs, defStyleAttr) {
@@ -42,6 +44,12 @@ open class StickyHeader @JvmOverloads constructor(
         header: View,
         y: Float
     ) {
+        if (DEBUG) {
+            Log.d(
+                LOG_TAG,
+                "onShowHeader(y:${y},header:${header},this.header:${this.header})"
+            )
+        }
         if (this.header == header) {
             this.header?.y = y
             return
@@ -63,9 +71,6 @@ open class StickyHeader @JvmOverloads constructor(
  */
 private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> Unit) :
     RecyclerView.ItemDecoration() {
-    companion object {
-        private const val LOG_TAG = "ExpandStickyHeaderD"
-    }
 
 
     private var headerGroup = -1
@@ -88,7 +93,7 @@ private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> 
 
         override fun onChanged() {
             super.onChanged()
-            header = null
+//            header = null
         }
     }
 

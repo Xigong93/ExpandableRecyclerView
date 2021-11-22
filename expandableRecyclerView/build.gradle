@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply from: rootProject.file("config.gradle.kt")
-apply from: rootProject.file("bintray.gradle")
+//apply from: rootProject.file("bintray.gradle")
 
 android {
     testOptions {
