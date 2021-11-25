@@ -155,21 +155,6 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
         return true
     }
 
-    /**
-     * 这个组接触到了RecyclerView的底部
-     */
-    private fun groupReachParentBottom(groupPosition: Int): Boolean {
-        var maxChildBottom = 0f
-        for (i in 0 until expandableRecyclerView.childCount) {
-            val view = expandableRecyclerView.getChildAt(i)
-            val viewHolder = expandableRecyclerView.getChildViewHolder(view)
-            if (expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            val viewGroupPosition = expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
-            if (viewGroupPosition != groupPosition) continue
-            maxChildBottom = max(maxChildBottom, view.y + view.height)
-        }
-        return maxChildBottom >= expandableRecyclerView.bottom - expandableRecyclerView.paddingBottom
-    }
 
     /**
      * 获取这一组中最远的距离
@@ -184,7 +169,8 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
             val view = expandableRecyclerView.getChildAt(i)
             val viewHolder = expandableRecyclerView.getChildViewHolder(view)
             if (expandableAdapter.isGroup(viewHolder.itemViewType)) continue
-            val viewGroupPosition = expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
+            val viewGroupPosition =
+                expandableAdapter.getItemLayoutPosition(viewHolder).groupPosition
             if (viewGroupPosition != groupPosition) continue
             val targetY = if (groupViewHolder != null) {
                 val bottomDecorationHeight =
@@ -206,17 +192,19 @@ open class ExpandableItemAnimator @JvmOverloads constructor(
         val animation = view.animate()
         mRemoveAnimations.add(holder)
         val isLastGroup = groupPosition == expandableAdapter.getGroupCount() - 1
-        if ((animChildrenItem || (isLastGroup && !groupReachParentBottom(groupPosition)))
-            && !expandableAdapter.isGroup(holder.itemViewType)
-        ) {
+        if ((animChildrenItem || isLastGroup) && !expandableAdapter.isGroup(holder.itemViewType)) {
             // 最后一组的执行一个展开动画，其他的不执行动画
             view.translationY = 0f
-            val maxTranslateY = if (isLastGroup) {
-                getGroupMaxTranslateY(groupPosition).toFloat()
-            } else {
-                getGroupMaxTranslateY(groupPosition) * animValue
+            val childTranslateY = getGroupMaxTranslateY(groupPosition)// child 要移动的距离
+            val groupVH = expandableRecyclerView.findGroupViewHolder(groupPosition)
+            val parentYStart = groupVH?.itemView?.y ?: 0f
+            val parentYEnd = groupVH?.itemView?.top?.toFloat() ?: 0f
+            val parentTranslateY = parentYEnd - parentYStart// parent 移动的距离
+            var tY = childTranslateY - parentTranslateY
+            if (animChildrenItem && !isLastGroup) {// 非最后一个item,可执行视差动画
+                tY *= animValue
             }
-            animation.translationY(-maxTranslateY)
+            animation.translationY(-tY)
                 .setDuration(removeDuration)
                 .setListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationStart(animator: Animator) {
