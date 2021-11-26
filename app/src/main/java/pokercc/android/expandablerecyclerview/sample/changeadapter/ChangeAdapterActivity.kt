@@ -51,10 +51,12 @@ private class CountAdapter(
     private var childCount: Int = Random.nextInt(2, 10)
 ) : ExpandableAdapter<ExpandableAdapter.ViewHolder>() {
 
+    private var prefix= Random.nextInt(10).toString()
     fun setNewData() {
         groupCount = Random.nextInt(5, 10)
         childCount = Random.nextInt(3, 10)
         notifyDataSetChanged()
+        prefix= Random.nextInt(10).toString()
     }
 
     override fun onCreateGroupViewHolder(
@@ -94,7 +96,7 @@ private class CountAdapter(
     ) {
         if (payloads.isEmpty()) {
             (holder as? ParentVH)?.apply {
-                binding.titleText.text = "Group "+(groupPosition + 1).toString()
+                binding.titleText.text = "${prefix}.Group "+(groupPosition + 1).toString()
                 binding.arrowImage.rotation = if (expand) 0f else -90.0f
             }
         }
