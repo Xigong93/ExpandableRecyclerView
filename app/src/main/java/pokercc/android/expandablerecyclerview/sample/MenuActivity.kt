@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import pokercc.android.expandablerecyclerview.sample.changeadapter.ChangeAdapterActivity
+import pokercc.android.expandablerecyclerview.sample.childsticky.ChildStickyHeaderActivity
 import pokercc.android.expandablerecyclerview.sample.college.CollegeActivity
 import pokercc.android.expandablerecyclerview.sample.databinding.ActivityMainBinding
 import pokercc.android.expandablerecyclerview.sample.databinding.MarketsActivityBinding
@@ -41,6 +42,9 @@ class MenuActivity : AppCompatActivity() {
         }
         binding.selection.setOnClickListener {
             SelectionActivity.start(it.context)
+        }
+        binding.childSticky.setOnClickListener {
+            ChildStickyHeaderActivity.start(it.context)
         }
     }
 }

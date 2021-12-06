@@ -213,6 +213,19 @@ open class ExpandableRecyclerView @JvmOverloads constructor(
         return null
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun findChildViewHolder(groupLayoutPosition: Int, childLayoutPosition: Int): ViewHolder? {
+        for (child in children) {
+            val viewHolder = getChildViewHolder(child)
+            if (requireAdapter().isGroup(viewHolder.itemViewType)) continue
+            val layoutPosition = requireAdapter().getItemLayoutPosition(viewHolder)
+            if (groupLayoutPosition == layoutPosition.groupPosition && childLayoutPosition == layoutPosition.childPosition) {
+                return viewHolder
+            }
+        }
+        return null
+    }
+
     override fun setLayoutParams(params: ViewGroup.LayoutParams) {
         require(params.height >= ViewGroup.LayoutParams.MATCH_PARENT) {
             "ExpandableRecyclerView height must be static size or MATCH_PARENT"

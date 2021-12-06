@@ -41,6 +41,7 @@
         android:layout_height="wrap_content"
         android:text="change adapter"
         app:layout_constraintTop_toTopOf="parent" />
+
     <Button
         android:id="@+id/selection"
         android:layout_width="match_parent"
@@ -48,4 +49,10 @@
         android:text="selection"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/child_sticky"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="child sticky"
+        app:layout_constraintTop_toTopOf="parent" />
 </LinearLayout>
