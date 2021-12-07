@@ -1,2 +1,3 @@
 - Fix StickyHeader bug
 - Enable diff util
+- Enable multi expand animation
