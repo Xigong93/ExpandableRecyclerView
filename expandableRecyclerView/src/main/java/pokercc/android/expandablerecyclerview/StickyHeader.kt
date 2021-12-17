@@ -2,13 +2,13 @@ package pokercc.android.expandablerecyclerview
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.util.AttributeSet
 import android.util.Log
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 
 private const val DEBUG = false
@@ -20,15 +20,21 @@ open class StickyHeader @JvmOverloads constructor(
 ) : FrameLayout(context, attrs, defStyleAttr) {
 
 
-    private val stickyHeaderDecoration = StickyHeaderDecoration(::onShowHeader)
+    private val headerUpdater = HeaderUpdater(::onShowHeader)
     private var header: View? = null
 
+    private val itemDecoration = object : RecyclerView.ItemDecoration() {
+        override fun onDraw(c: Canvas, parent: RecyclerView, state: RecyclerView.State) {
+            super.onDraw(c, parent, state)
+            headerUpdater.updateHeader(parent as ExpandableRecyclerView)
+
+        }
+    }
 
     override fun onViewAdded(child: View) {
         super.onViewAdded(child)
         if (child is ExpandableRecyclerView) {
-            child.addItemDecoration(stickyHeaderDecoration)
-            child.adapter
+            child.addItemDecoration(itemDecoration)
         }
     }
 
@@ -36,7 +42,7 @@ open class StickyHeader @JvmOverloads constructor(
     override fun onViewRemoved(child: View) {
         super.onViewRemoved(child)
         if (child is ExpandableRecyclerView) {
-            child.removeItemDecoration(stickyHeaderDecoration)
+            child.removeItemDecoration(itemDecoration)
         }
     }
 
@@ -50,27 +56,22 @@ open class StickyHeader @JvmOverloads constructor(
                 "onShowHeader(y:${y},header:${header},this.header:${this.header})"
             )
         }
-        if (this.header == header) {
-            this.header?.y = y
-            return
+
+        if (this.header != header) {
+            this.header?.let { removeView(it) }
+            this.header = header
+            val defaultParams = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
+            val layoutParams = header.layoutParams?.let(::LayoutParams) ?: defaultParams
+            layoutParams.gravity = Gravity.TOP
+            addView(header, layoutParams)
         }
-        this.header?.let { removeView(it) }
-        this.header = header
-        val layoutParams = header.layoutParams?.let(::LayoutParams)
-            ?: LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT)
-        layoutParams.gravity = Gravity.TOP
-        addView(header, layoutParams)
         this.header?.y = y
     }
 
 
 }
 
-/**
- * 固定头的装饰器
- */
-private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> Unit) :
-    RecyclerView.ItemDecoration() {
+class HeaderUpdater(private val onShowHeader: (View, Float) -> Unit) {
 
 
     private var headerGroup = -1
@@ -101,14 +102,10 @@ private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> 
     private fun getFirstVisibleHolder(
         recyclerView: RecyclerView
     ) = recyclerView.children
-        .firstOrNull { it.y <= 0 && it.y + it.height > 0 }
+        .firstOrNull { it.y <= 0 && (it.y + it.height) > 0 }
         ?.let { recyclerView.getChildViewHolder(it) }
 
-
-    override fun onDraw(c: Canvas, p: RecyclerView, state: RecyclerView.State) {
-        super.onDraw(c, p, state)
-        val recyclerView = p as? ExpandableRecyclerView ?: return
-
+    fun updateHeader(recyclerView: ExpandableRecyclerView) {
         @Suppress("UNCHECKED_CAST")
         val adapter = recyclerView.adapter as? ExpandableAdapter<ExpandableAdapter.ViewHolder>
         adapter ?: return
@@ -127,32 +124,43 @@ private class StickyHeaderDecoration(private val onShowHeader: (View, Float) -> 
         if (this.header == null || this.headerType != groupType) {
             this.headerGroup = -1
             this.headerType = groupType
-            this.header = adapter.onCreateViewHolder(recyclerView, groupType)
+            this.header = adapter.createViewHolder(recyclerView, groupType)
             if (DEBUG) {
-                this.header?.itemView?.setBackgroundColor(Color.RED)
+                Log.d(LOG_TAG, "onCreateVH $groupType")
+//                this.header?.itemView?.setBackgroundColor(Color.RED)
             }
         }
 
+        var hadBindView = false
         // Bind Header
         val headerViewHolder = this.header ?: return
         if (this.headerGroup != firstGroup) {
             val position = adapter.getGroupAdapterPosition(firstGroup)
-            adapter.onBindViewHolder(headerViewHolder, position, mutableListOf())
+            adapter.bindViewHolder(headerViewHolder, position)
             this.headerGroup = firstGroup
+            hadBindView = true
+            if (DEBUG) {
+                Log.d(LOG_TAG, "bindViewHolder group:$firstGroup")
+            }
         }
-
         // Calculate position
         val nextGroupView = recyclerView.findGroupViewHolder(firstGroup + 1)?.itemView
         var y = 0f
         if (nextGroupView != null) {
-            y = nextGroupView.y - headerViewHolder.itemView.height
+            val itemHeight = headerViewHolder.itemView.height.takeIf { it != 0 }
+                ?: headerViewHolder.itemView.measuredHeight
+            y = nextGroupView.y - itemHeight
+        }
+
+        if (hadBindView) { // 绑定后这一帧，不显示Header
+            y = recyclerView.height * -1f
         }
         y = y.coerceAtMost(0f)
         onShowHeader(headerViewHolder.itemView, y)
         if (DEBUG) {
             Log.d(
                 LOG_TAG,
-                "onGroupShow,y:${y},height:${headerViewHolder.itemView.height},nextGroupView:${nextGroupView}"
+                "onGroupShow,group:$headerGroup,y:${y},height:${headerViewHolder.itemView.height},nextGroupView:${nextGroupView}"
             )
         }
 
